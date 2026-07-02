@@ -1,0 +1,239 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+    font-variation-settings: normal;
+    overscroll-behavior: none;
+  }
+
+  /* Focus ring — accessible, consistent, never removed without replacement. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.22);
+  }
+
+  /* Refined scrollbars that fade into the surface. */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--subtle) / 0.35);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--subtle) / 0.6);
+    background-clip: content-box;
+  }
+}
+
+@layer components {
+  /* Shared surface treatment for cards, popovers, menus. */
+  .rn-panel {
+    @apply bg-elevated border border-border rounded-lg shadow-md;
+  }
+
+  /* Subtle skeleton shimmer used by loading states. */
+  .rn-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .rn-shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--foreground) / 0.06),
+      transparent
+    );
+    animation: shimmer 1.6s infinite;
+  }
+}
+
+/* ── Editor (ProseMirror) ─────────────────────────────────────────────────
+   The editor is the soul of RNOTE. These styles give blocks generous rhythm,
+   crisp typography and mode-aware accents while staying framework-agnostic. */
+.rn-editor .ProseMirror {
+  @apply outline-none text-foreground;
+  font-size: 16px;
+  line-height: 1.7;
+  caret-color: hsl(var(--primary));
+  min-height: 40vh;
+}
+
+.rn-editor .ProseMirror > * + * {
+  margin-top: 2px;
+}
+
+.rn-editor .ProseMirror p {
+  padding: 3px 0;
+}
+
+.rn-editor .ProseMirror h1 {
+  @apply font-display;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  margin-top: 1.6rem;
+  margin-bottom: 0.2rem;
+}
+
+.rn-editor .ProseMirror h2 {
+  @apply font-display;
+  font-size: 1.5rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+  margin-top: 1.3rem;
+  margin-bottom: 0.15rem;
+}
+
+.rn-editor .ProseMirror h3 {
+  @apply font-display;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-top: 1rem;
+  margin-bottom: 0.1rem;
+}
+
+.rn-editor .ProseMirror ul,
+.rn-editor .ProseMirror ol {
+  padding-left: 1.6em;
+}
+.rn-editor .ProseMirror ul {
+  list-style: disc;
+}
+.rn-editor .ProseMirror ol {
+  list-style: decimal;
+}
+.rn-editor .ProseMirror li {
+  padding: 2px 0;
+}
+.rn-editor .ProseMirror li::marker {
+  color: hsl(var(--subtle));
+}
+
+.rn-editor .ProseMirror blockquote {
+  border-left: 3px solid hsl(var(--primary) / 0.6);
+  padding-left: 1rem;
+  margin: 0.4rem 0;
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+}
+
+.rn-editor .ProseMirror pre {
+  @apply font-mono bg-muted rounded-md;
+  font-size: 0.85em;
+  padding: 0.9rem 1.1rem;
+  margin: 0.5rem 0;
+  overflow-x: auto;
+  line-height: 1.5;
+}
+.rn-editor .ProseMirror code {
+  @apply font-mono;
+  font-size: 0.86em;
+  background: hsl(var(--muted));
+  padding: 0.12em 0.36em;
+  border-radius: 5px;
+}
+.rn-editor .ProseMirror pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.rn-editor .ProseMirror hr {
+  border: none;
+  border-top: 1.5px solid hsl(var(--border-strong));
+  margin: 1.1rem 0;
+}
+
+.rn-editor .ProseMirror a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  cursor: pointer;
+}
+
+/* Task list (checkboxes) */
+.rn-editor .ProseMirror ul[data-type='taskList'] {
+  list-style: none;
+  padding-left: 0.2em;
+}
+.rn-editor .ProseMirror ul[data-type='taskList'] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6em;
+}
+.rn-editor .ProseMirror ul[data-type='taskList'] li > label {
+  margin-top: 0.34em;
+  user-select: none;
+}
+.rn-editor .ProseMirror ul[data-type='taskList'] input[type='checkbox'] {
+  appearance: none;
+  width: 1.05em;
+  height: 1.05em;
+  border: 1.5px solid hsl(var(--border-strong));
+  border-radius: 5px;
+  cursor: pointer;
+  position: relative;
+  transition: all var(--duration-fast) ease;
+  flex-shrink: 0;
+}
+.rn-editor .ProseMirror ul[data-type='taskList'] input[type='checkbox']:checked {
+  background: hsl(var(--primary));
+  border-color: hsl(var(--primary));
+}
+.rn-editor .ProseMirror ul[data-type='taskList'] input[type='checkbox']:checked::after {
+  content: '';
+  position: absolute;
+  left: 0.3em;
+  top: 0.12em;
+  width: 0.3em;
+  height: 0.55em;
+  border: solid hsl(var(--primary-foreground));
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.rn-editor .ProseMirror ul[data-type='taskList'] li[data-checked='true'] > div {
+  color: hsl(var(--subtle));
+  text-decoration: line-through;
+}
+
+/* Placeholder for empty first line and empty blocks. */
+.rn-editor .ProseMirror .is-editor-empty:first-child::before,
+.rn-editor .ProseMirror .is-empty::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: hsl(var(--subtle));
+}

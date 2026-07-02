@@ -1,0 +1,70 @@
+import { Search, Plus, Sparkles } from 'lucide-react';
+import { useWorkspace } from '../state/workspace';
+import { usePreferences } from '../state/preferences';
+import { DocTreeItem } from './DocTreeItem';
+import { Kbd } from '../components/Kbd';
+import { ThemeModeControls } from '../components/ThemeModeControls';
+
+interface SidebarProps {
+  onOpenSearch: () => void;
+}
+
+export function Sidebar({ onOpenSearch }: SidebarProps): JSX.Element {
+  const workspaceName = useWorkspace((s) => s.workspaceName);
+  const tree = useWorkspace((s) => s.tree);
+  const createDocument = useWorkspace((s) => s.createDocument);
+  const mode = usePreferences((s) => s.mode);
+
+  return (
+    <aside className="flex h-full w-[264px] shrink-0 flex-col border-r border-border bg-surface">
+      <div className="flex items-center gap-2.5 px-3.5 pb-2 pt-3.5">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-glow">
+          <span className="font-display text-sm font-bold">R</span>
+        </div>
+        <div className="min-w-0">
+          <div className="truncate text-sm font-semibold text-foreground">{workspaceName}</div>
+          <div className="flex items-center gap-1 text-[10px] uppercase tracking-wide text-subtle">
+            {mode === 'genz' && <Sparkles size={9} />}
+            {mode === 'genz' ? 'Gen Z' : 'Millennial'} · Local
+          </div>
+        </div>
+      </div>
+
+      <div className="px-2.5 pb-1">
+        <button
+          type="button"
+          onClick={onOpenSearch}
+          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-surface-hover"
+        >
+          <Search size={15} />
+          <span className="flex-1 text-left">Search</span>
+          <Kbd>⌘K</Kbd>
+        </button>
+        <button
+          type="button"
+          onClick={() => createDocument(null)}
+          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-surface-hover"
+        >
+          <Plus size={15} />
+          <span className="flex-1 text-left">New page</span>
+        </button>
+      </div>
+
+      <div className="mt-1 px-2.5 pb-1 text-[11px] font-medium uppercase tracking-wide text-subtle">
+        Private
+      </div>
+
+      <nav aria-label="Pages" className="min-h-0 flex-1 overflow-y-auto px-2 pb-4">
+        {tree.length === 0 ? (
+          <p className="px-2 py-3 text-xs text-subtle">No pages yet.</p>
+        ) : (
+          tree.map((node) => <DocTreeItem key={node.id} node={node} depth={0} />)
+        )}
+      </nav>
+
+      <div className="border-t border-border px-3 py-2.5">
+        <ThemeModeControls />
+      </div>
+    </aside>
+  );
+}

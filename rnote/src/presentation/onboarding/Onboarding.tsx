@@ -1,0 +1,168 @@
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Sparkles, Briefcase, Sun, Moon, ArrowRight, Check } from 'lucide-react';
+import { usePreferences, type ModeName, type ThemeName } from '../state/preferences';
+import { Button } from '../components/Button';
+import { cn } from '../lib/cn';
+
+const MODES: {
+  id: ModeName;
+  name: string;
+  tagline: string;
+  icon: typeof Sparkles;
+  chips: string[];
+}[] = [
+  {
+    id: 'millennial',
+    name: 'Millennial',
+    tagline: 'Calm, minimal, professional.',
+    icon: Briefcase,
+    chips: ['Muted palette', 'Reduced motion', 'Focus-first'],
+  },
+  {
+    id: 'genz',
+    name: 'Gen Z',
+    tagline: 'Vibrant, animated, playful.',
+    icon: Sparkles,
+    chips: ['Bold gradients', 'Delightful motion', 'Gamified'],
+  },
+];
+
+export function Onboarding(): JSX.Element {
+  const initialMode = usePreferences((s) => s.mode);
+  const initialTheme = usePreferences((s) => s.theme);
+  const setMode = usePreferences((s) => s.setMode);
+  const setTheme = usePreferences((s) => s.setTheme);
+  const completeOnboarding = usePreferences((s) => s.completeOnboarding);
+
+  const [mode, setLocalMode] = useState<ModeName>(initialMode);
+  const [theme, setLocalTheme] = useState<ThemeName>(initialTheme);
+
+  // Apply choices live so the whole screen previews the selection.
+  const chooseMode = (m: ModeName): void => {
+    setLocalMode(m);
+    setMode(m);
+  };
+  const chooseTheme = (t: ThemeName): void => {
+    setLocalTheme(t);
+    setTheme(t);
+  };
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background px-6 py-12">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-2xl"
+      >
+        <div className="mb-8 text-center">
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-glow">
+            <span className="font-display text-2xl font-bold">R</span>
+          </div>
+          <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
+            Welcome to RNOTE
+          </h1>
+          <p className="mx-auto mt-2 max-w-md text-[15px] text-muted-foreground">
+            Your private, offline-first life OS. Choose how it should feel — you can change this
+            anytime. It only changes the look, never the features.
+          </p>
+        </div>
+
+        <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {MODES.map((m) => {
+            const Icon = m.icon;
+            const selected = mode === m.id;
+            return (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => chooseMode(m.id)}
+                className={cn(
+                  'group relative overflow-hidden rounded-xl border p-5 text-left transition-all',
+                  selected
+                    ? 'border-primary bg-primary/5 shadow-glow'
+                    : 'border-border bg-surface hover:border-border-strong',
+                )}
+              >
+                <div className="mb-3 flex items-center justify-between">
+                  <span
+                    className={cn(
+                      'flex h-10 w-10 items-center justify-center rounded-lg',
+                      selected ? 'bg-primary text-primary-foreground' : 'bg-surface-hover text-muted-foreground',
+                    )}
+                  >
+                    <Icon size={20} />
+                  </span>
+                  {selected && (
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground"
+                    >
+                      <Check size={14} strokeWidth={3} />
+                    </motion.span>
+                  )}
+                </div>
+                <div className="text-lg font-semibold text-foreground">{m.name}</div>
+                <div className="mb-3 text-sm text-muted-foreground">{m.tagline}</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {m.chips.map((chip) => (
+                    <span
+                      key={chip}
+                      className="rounded-full border border-border bg-background px-2 py-0.5 text-[11px] text-muted-foreground"
+                    >
+                      {chip}
+                    </span>
+                  ))}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="mb-8 flex items-center justify-center gap-3">
+          <span className="text-sm text-muted-foreground">Appearance</span>
+          <div className="flex items-center rounded-lg border border-border bg-surface p-0.5">
+            {(
+              [
+                { id: 'light' as ThemeName, label: 'Light', icon: Sun },
+                { id: 'dark' as ThemeName, label: 'Dark', icon: Moon },
+              ]
+            ).map((t) => {
+              const Icon = t.icon;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => chooseTheme(t.id)}
+                  className={cn(
+                    'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-colors',
+                    theme === t.id
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  <Icon size={14} />
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="flex justify-center">
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={() => completeOnboarding({ mode, theme })}
+            className="min-w-[220px]"
+          >
+            Enter RNOTE
+            <ArrowRight size={18} />
+          </Button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
