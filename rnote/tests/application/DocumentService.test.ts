@@ -85,6 +85,27 @@ describe('DocumentService · archive & delete cascade', () => {
   });
 });
 
+describe('DocumentService · backup', () => {
+  it('exports and re-imports documents, preserving structure with fresh ids', async () => {
+    const parent = await create('Parent');
+    await create('Child', parent);
+
+    const backup = await service.exportDocuments(WS);
+    expect(backup).toHaveLength(2);
+
+    // Import into a different workspace (merge semantics → new ids).
+    const result = await service.importDocuments('ws-2', backup);
+    expect(result.ok && result.value).toBe(2);
+
+    const tree = await service.listTree('ws-2');
+    expect(tree).toHaveLength(1);
+    expect(tree[0]?.title).toBe('Parent');
+    expect(tree[0]?.children[0]?.title).toBe('Child');
+    // The imported root has a fresh id, not one of the originals.
+    expect(backup.map((b) => b.id)).not.toContain(tree[0]?.id);
+  });
+});
+
 describe('DocumentService · search', () => {
   it('finds documents by title and body, scoped to the workspace', async () => {
     const id = await create('Quantum Notes');

@@ -1,5 +1,5 @@
-import { Document, DocumentContent, type DocumentId } from '@domain/documents';
-import { idFrom } from '@domain/shared';
+import { Document, DocumentContent, type DocumentId, type DocumentProps } from '@domain/documents';
+import { idFrom, createId } from '@domain/shared';
 import type { Clock } from '@domain/shared';
 import type { WorkspaceId } from '@domain/workspace';
 import type { RichDoc } from '@domain/blocks';
@@ -8,6 +8,7 @@ import type { DocumentRepository } from '../ports/DocumentRepository';
 import type { SearchHit, SearchIndexPort } from '../ports/SearchIndex';
 import type { DocumentDetail, DocumentSummary, DocumentTreeNode } from '../dto';
 import { toDetail, toSummary, buildTree } from './mappers';
+import { toBackupDocument, type BackupDocument } from './backup';
 
 const docId = (id: string): DocumentId => idFrom<'Document'>(id);
 const wsId = (id: string): WorkspaceId => idFrom<'Workspace'>(id);
@@ -182,6 +183,50 @@ export class DocumentService {
   async reindexWorkspace(workspaceId: string): Promise<void> {
     const docs = await this.documents.findByWorkspace(wsId(workspaceId));
     for (const document of docs) this.indexDocument(document);
+  }
+
+  /** Every document (including archived) as a portable backup list. */
+  async exportDocuments(workspaceId: string): Promise<BackupDocument[]> {
+    const docs = await this.documents.findByWorkspace(wsId(workspaceId), { includeArchived: true });
+    return docs.map(toBackupDocument);
+  }
+
+  /**
+   * Import documents into a workspace with merge semantics: fresh ids are
+   * assigned and parent links remapped, so an import never collides with
+   * existing pages — safe to run to recover from data loss. Invalid content is
+   * skipped rather than aborting the whole import.
+   */
+  async importDocuments(
+    workspaceId: string,
+    docs: readonly BackupDocument[],
+  ): Promise<Result<number>> {
+    const idMap = new Map<string, string>();
+    for (const d of docs) idMap.set(d.id, createId<'Document'>());
+
+    let imported = 0;
+    for (const d of docs) {
+      const parsed = DocumentContent.fromJSON(d.content);
+      if (!parsed.ok) continue;
+
+      const mappedParent = d.parentId ? idMap.get(d.parentId) : undefined;
+      const props: DocumentProps = {
+        workspaceId: wsId(workspaceId),
+        parentId: mappedParent ? docId(mappedParent) : null,
+        title: d.title,
+        icon: d.icon,
+        content: parsed.value,
+        position: d.position,
+        isArchived: d.isArchived,
+        createdAt: d.createdAt,
+        updatedAt: d.updatedAt,
+      };
+      const document = Document.rehydrate(docId(idMap.get(d.id) as string), props);
+      await this.documents.save(document);
+      this.indexDocument(document);
+      imported += 1;
+    }
+    return ok(imported);
   }
 
   // ── Internals ──────────────────────────────────────────────────────────────

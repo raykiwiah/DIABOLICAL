@@ -1,10 +1,14 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { Sidebar } from '../sidebar/Sidebar';
 import { Topbar } from '../topbar/Topbar';
 import { DocumentEditor } from '../editor/DocumentEditor';
-import { CommandPalette } from '../command-palette/CommandPalette';
 import { useHotkey } from '../hooks/useHotkey';
+
+// The palette is only needed once the user reaches for it (⌘K).
+const CommandPalette = lazy(() =>
+  import('../command-palette/CommandPalette').then((m) => ({ default: m.CommandPalette })),
+);
 
 /** The main three-region workspace: sidebar · topbar · editor, plus the ⌘K palette. */
 export function AppShell(): JSX.Element {
@@ -12,6 +16,7 @@ export function AppShell(): JSX.Element {
   const [paletteOpen, setPaletteOpen] = useState(false);
 
   useHotkey('k', () => setPaletteOpen((o) => !o), { meta: true, allowInEditable: true });
+  useHotkey('\\', () => setSidebarOpen((o) => !o), { meta: true, allowInEditable: true });
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground">
@@ -27,9 +32,11 @@ export function AppShell(): JSX.Element {
         </main>
       </div>
 
-      <AnimatePresence>
-        {paletteOpen && <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />}
-      </AnimatePresence>
+      <Suspense fallback={null}>
+        <AnimatePresence>
+          {paletteOpen && <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />}
+        </AnimatePresence>
+      </Suspense>
     </div>
   );
 }

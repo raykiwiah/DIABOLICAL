@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { RichDoc } from '@domain/blocks';
 import type { DocumentDetail, DocumentSummary, DocumentTreeNode } from '@application/dto';
+import type { WorkspaceBackup } from '@application/documents/backup';
 import type { SearchHit } from '@application/ports/SearchIndex';
 import { container } from '@/composition/container';
 import { WELCOME_DOC } from './welcome';
@@ -28,6 +29,8 @@ interface WorkspaceState {
   move: (id: string, parentId: string | null, position: number) => Promise<void>;
   restore: (id: string) => Promise<void>;
   loadArchived: () => Promise<void>;
+  buildBackup: () => Promise<WorkspaceBackup>;
+  restoreBackup: (backup: WorkspaceBackup) => Promise<number>;
   toggleExpanded: (id: string) => void;
   search: (query: string) => SearchHit[];
 }
@@ -168,6 +171,26 @@ export const useWorkspace = create<WorkspaceState>((set, get) => ({
     const { workspaceId } = get();
     if (!workspaceId) return;
     set({ archived: await documents.listArchived(workspaceId) });
+  },
+
+  buildBackup: async () => {
+    const { workspaceId, workspaceName } = get();
+    const docs = workspaceId ? await documents.exportDocuments(workspaceId) : [];
+    return {
+      format: 'rnote.backup' as const,
+      version: 1 as const,
+      exportedAt: Date.now(),
+      workspaceName,
+      documents: docs,
+    };
+  },
+
+  restoreBackup: async (backup) => {
+    const { workspaceId } = get();
+    if (!workspaceId) return 0;
+    const result = await documents.importDocuments(workspaceId, backup.documents);
+    await get().refreshTree();
+    return result.ok ? result.value : 0;
   },
 
   toggleExpanded: (id) =>

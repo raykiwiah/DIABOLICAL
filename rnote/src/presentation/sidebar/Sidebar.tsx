@@ -1,11 +1,14 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { Search, Plus, Sparkles, Trash2 } from 'lucide-react';
 import { useWorkspace } from '../state/workspace';
 import { usePreferences } from '../state/preferences';
 import { DocTreeItem } from './DocTreeItem';
 import { Kbd } from '../components/Kbd';
 import { ThemeModeControls } from '../components/ThemeModeControls';
-import { TrashModal } from '../trash/TrashModal';
+
+const TrashModal = lazy(() =>
+  import('../trash/TrashModal').then((m) => ({ default: m.TrashModal })),
+);
 
 interface SidebarProps {
   onOpenSearch: () => void;
@@ -79,7 +82,9 @@ export function Sidebar({ onOpenSearch }: SidebarProps): JSX.Element {
         </div>
       </div>
 
-      <TrashModal open={trashOpen} onClose={() => setTrashOpen(false)} />
+      <Suspense fallback={null}>
+        {trashOpen && <TrashModal open onClose={() => setTrashOpen(false)} />}
+      </Suspense>
     </aside>
   );
 }

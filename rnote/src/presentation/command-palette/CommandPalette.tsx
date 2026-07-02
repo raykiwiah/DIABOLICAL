@@ -8,12 +8,18 @@ import {
   Sparkles,
   FileText,
   CornerDownLeft,
+  Download,
+  Upload,
+  FileDown,
 } from 'lucide-react';
 import type { DocumentTreeNode } from '@application/dto';
+import { isWorkspaceBackup } from '@application/documents/backup';
 import { useWorkspace } from '../state/workspace';
 import { usePreferences } from '../state/preferences';
 import { Kbd } from '../components/Kbd';
 import { cn } from '../lib/cn';
+import { downloadFile, pickTextFile, slugify } from '../lib/files';
+import { richDocToMarkdown } from '../lib/markdown';
 
 interface CommandPaletteProps {
   open: boolean;
@@ -76,6 +82,49 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps): JSX.Elem
         icon: <Sparkles size={16} />,
         title: mode === 'genz' ? 'Switch to Millennial mode' : 'Switch to Gen Z mode',
         run: () => setMode(mode === 'genz' ? 'millennial' : 'genz'),
+      },
+      {
+        key: 'export-backup',
+        group: 'Actions',
+        icon: <Download size={16} />,
+        title: 'Export backup (.json)',
+        run: async () => {
+          const backup = await useWorkspace.getState().buildBackup();
+          const stamp = new Date().toISOString().slice(0, 10);
+          downloadFile(`rnote-backup-${stamp}.json`, JSON.stringify(backup, null, 2));
+        },
+      },
+      {
+        key: 'import-backup',
+        group: 'Actions',
+        icon: <Upload size={16} />,
+        title: 'Import backup…',
+        run: async () => {
+          const text = await pickTextFile('application/json,.json');
+          if (!text) return;
+          try {
+            const parsed: unknown = JSON.parse(text);
+            if (!isWorkspaceBackup(parsed)) {
+              window.alert('That file is not a valid RNOTE backup.');
+              return;
+            }
+            const count = await useWorkspace.getState().restoreBackup(parsed);
+            window.alert(`Imported ${count} page${count === 1 ? '' : 's'}.`);
+          } catch {
+            window.alert('Could not read that backup file.');
+          }
+        },
+      },
+      {
+        key: 'export-markdown',
+        group: 'Actions',
+        icon: <FileDown size={16} />,
+        title: 'Export current page as Markdown',
+        run: () => {
+          const doc = useWorkspace.getState().activeDoc;
+          if (!doc) return;
+          downloadFile(`${slugify(doc.title)}.md`, richDocToMarkdown(doc.content), 'text/markdown');
+        },
       },
     ];
     const actions = allActions.filter(

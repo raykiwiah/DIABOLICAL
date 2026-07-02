@@ -1,6 +1,7 @@
 export * from './dto';
 export * from './documents/DocumentService';
 export * from './documents/mappers';
+export * from './documents/backup';
 export * from './workspace/WorkspaceService';
 export * from './ports/DocumentRepository';
 export * from './ports/WorkspaceRepository';

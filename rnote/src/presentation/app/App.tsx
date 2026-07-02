@@ -1,9 +1,13 @@
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { usePreferences } from '../state/preferences';
 import { useWorkspace } from '../state/workspace';
-import { Onboarding } from '../onboarding/Onboarding';
 import { AppShell } from './AppShell';
 import { Spinner } from '../components/Spinner';
+
+// Onboarding is shown only on first run, so it is loaded on demand.
+const Onboarding = lazy(() =>
+  import('../onboarding/Onboarding').then((m) => ({ default: m.Onboarding })),
+);
 
 export function App(): JSX.Element {
   const onboarded = usePreferences((s) => s.onboarded);
@@ -14,7 +18,13 @@ export function App(): JSX.Element {
     void bootstrap();
   }, [bootstrap]);
 
-  if (!onboarded) return <Onboarding />;
+  if (!onboarded) {
+    return (
+      <Suspense fallback={<BootScreen />}>
+        <Onboarding />
+      </Suspense>
+    );
+  }
   if (status !== 'ready') return <BootScreen />;
   return <AppShell />;
 }
