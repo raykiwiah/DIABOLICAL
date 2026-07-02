@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, ArrowRight, FileText, Sparkles, Clock, Layers, Zap } from 'lucide-react';
+import { Plus, ArrowRight, FileText, Sparkles, Clock, LayoutTemplate, Zap } from 'lucide-react';
 import type { DocumentTreeNode } from '@application/dto';
 import { useWorkspace } from '../state/workspace';
 import { usePreferences } from '../state/preferences';
 import { cn } from '../lib/cn';
+import { emit, OPEN_TEMPLATES_EVENT } from '../lib/events';
 
 /** The "Today" home dashboard — the default landing surface. */
 export function Home(): JSX.Element {
@@ -83,13 +84,10 @@ export function Home(): JSX.Element {
             onClick={() => void createDocument(null)}
           />
           <ActionCard
-            icon={<Layers size={18} />}
-            title="All pages"
-            subtitle={`${flat.length} in workspace`}
-            onClick={() => {
-              const first = recent[0];
-              if (first) void open(first.id);
-            }}
+            icon={<LayoutTemplate size={18} />}
+            title="Templates"
+            subtitle={`${flat.length} pages · start from a layout`}
+            onClick={() => emit(OPEN_TEMPLATES_EVENT)}
           />
           <ActionCard
             icon={<Sparkles size={18} />}

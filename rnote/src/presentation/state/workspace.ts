@@ -5,6 +5,7 @@ import type { WorkspaceBackup } from '@application/documents/backup';
 import type { SearchHit } from '@application/ports/SearchIndex';
 import { container } from '@/composition/container';
 import { WELCOME_DOC } from './welcome';
+import type { PageTemplate } from '../templates/templates';
 
 interface WorkspaceState {
   status: 'idle' | 'loading' | 'ready';
@@ -23,6 +24,7 @@ interface WorkspaceState {
   open: (id: string) => Promise<void>;
   showHome: () => void;
   createDocument: (parentId?: string | null) => Promise<string | null>;
+  createFromTemplate: (template: PageTemplate) => Promise<void>;
   rename: (id: string, title: string) => Promise<void>;
   setIcon: (id: string, icon: string) => Promise<void>;
   saveContent: (id: string, content: RichDoc) => Promise<void>;
@@ -107,6 +109,16 @@ export const useWorkspace = create<WorkspaceState>((set, get) => ({
     if (parentId) set({ expanded: { ...get().expanded, [parentId]: true } });
     await get().open(created.value.id);
     return created.value.id;
+  },
+
+  createFromTemplate: async (template) => {
+    const { workspaceId } = get();
+    if (!workspaceId) return;
+    const { title, icon, content } = template.create();
+    const created = await documents.createDocument({ workspaceId, title, icon, content });
+    if (!created.ok) return;
+    await get().refreshTree();
+    await get().open(created.value.id);
   },
 
   rename: async (id, title) => {

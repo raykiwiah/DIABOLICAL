@@ -11,6 +11,7 @@ import {
   Download,
   Upload,
   FileDown,
+  LayoutTemplate,
 } from 'lucide-react';
 import type { DocumentTreeNode } from '@application/dto';
 import { isWorkspaceBackup } from '@application/documents/backup';
@@ -20,6 +21,7 @@ import { Kbd } from '../components/Kbd';
 import { cn } from '../lib/cn';
 import { downloadFile, pickTextFile, slugify } from '../lib/files';
 import { richDocToMarkdown } from '../lib/markdown';
+import { emit, OPEN_TEMPLATES_EVENT } from '../lib/events';
 
 interface CommandPaletteProps {
   open: boolean;
@@ -68,6 +70,13 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps): JSX.Elem
         icon: <Plus size={16} />,
         title: 'Create new page',
         run: () => void createDocument(null),
+      },
+      {
+        key: 'new-from-template',
+        group: 'Actions',
+        icon: <LayoutTemplate size={16} />,
+        title: 'New page from template…',
+        run: () => emit(OPEN_TEMPLATES_EVENT),
       },
       {
         key: 'toggle-theme',

@@ -65,9 +65,9 @@ Theme studio ▷ · Widget studio ▷ · Marketplace ▷ · PWA installable ✅
 - [x] **I1 · Home dashboard + UI overhaul.** ✅ Widget "Today" home: time-aware
       greeting, quick-capture, quick-action cards, and a "Jump back in" recent
       grid. Home view wired into shell/sidebar/topbar; lands here on boot.
-- [ ] **I2 · Templates gallery.** New-page template picker: Blank, Journal,
-      Daily note, Meeting notes, Habit tracker, Reading list, Project, Goal.
-      Seeded rich content per template.
+- [x] **I2 · Templates gallery.** ✅ Template picker (Blank, Daily note, Journal,
+      Meeting notes, Habit tracker, Reading list, Project, Goal) with seeded rich
+      content; create-with-content use case; opened from Home + ⌘K.
 - [ ] **I3 · Block expansion.** Columns, image block (stored locally as data
       URL/blob in IndexedDB), bookmark (URL card), and a basic table block.
 - [ ] **I4 · Quick capture + Focus mode + Reading mode.** Global quick-capture

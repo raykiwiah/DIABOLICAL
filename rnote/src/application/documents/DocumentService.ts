@@ -18,6 +18,7 @@ export interface CreateDocumentCommand {
   parentId?: string | null;
   title?: string;
   icon?: string;
+  content?: RichDoc;
 }
 
 /**
@@ -35,12 +36,20 @@ export class DocumentService {
   ) {}
 
   async createDocument(command: CreateDocumentCommand): Promise<Result<DocumentDetail>> {
+    let content: DocumentContent | undefined;
+    if (command.content) {
+      const parsed = DocumentContent.fromJSON(command.content);
+      if (!parsed.ok) return parsed;
+      content = parsed.value;
+    }
+
     const created = Document.create(
       {
         workspaceId: wsId(command.workspaceId),
         parentId: command.parentId ? docId(command.parentId) : null,
         title: command.title,
         icon: command.icon,
+        content,
       },
       this.clock,
     );
