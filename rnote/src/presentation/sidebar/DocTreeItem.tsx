@@ -1,9 +1,16 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type DragEvent } from 'react';
 import { ChevronRight, Plus, MoreHorizontal, Trash2, PenLine, FileText } from 'lucide-react';
 import type { DocumentTreeNode } from '@application/dto';
 import { useWorkspace } from '../state/workspace';
 import { useOnClickOutside } from '../hooks/useOnClickOutside';
 import { cn } from '../lib/cn';
+
+// Shared across sibling tree items for the duration of a drag. A module-level
+// ref is the reliable way to read the dragged id during `dragover` (the
+// DataTransfer payload is not readable there for security reasons).
+let draggedId: string | null = null;
+
+type DropZone = 'before' | 'after' | 'inside' | null;
 
 interface DocTreeItemProps {
   node: DocumentTreeNode;
@@ -18,10 +25,13 @@ export function DocTreeItem({ node, depth }: DocTreeItemProps): JSX.Element {
   const createDocument = useWorkspace((s) => s.createDocument);
   const rename = useWorkspace((s) => s.rename);
   const archive = useWorkspace((s) => s.archive);
+  const move = useWorkspace((s) => s.move);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(node.title);
+  const [dropZone, setDropZone] = useState<DropZone>(null);
+  const [dragging, setDragging] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   useOnClickOutside(menuRef, () => setMenuOpen(false), menuOpen);
@@ -40,16 +50,66 @@ export function DocTreeItem({ node, depth }: DocTreeItemProps): JSX.Element {
     else setDraft(node.title);
   };
 
+  const handleDragOver = (e: DragEvent<HTMLDivElement>): void => {
+    if (!draggedId || draggedId === node.id) return;
+    e.preventDefault();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    setDropZone(y < rect.height * 0.28 ? 'before' : y > rect.height * 0.72 ? 'after' : 'inside');
+  };
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>): void => {
+    e.preventDefault();
+    const id = draggedId;
+    const zone = dropZone;
+    draggedId = null;
+    setDropZone(null);
+    if (!id || id === node.id || !zone) return;
+    // Positions are ordering keys; a half-step lands the item just before/after
+    // the target. Cross-tree cycles are rejected by the move use case.
+    if (zone === 'inside') {
+      void move(id, node.id, Date.now());
+      if (!expanded) toggleExpanded(node.id);
+    } else if (zone === 'before') {
+      void move(id, node.parentId, node.position - 0.5);
+    } else {
+      void move(id, node.parentId, node.position + 0.5);
+    }
+  };
+
   return (
     <div>
       <div
+        draggable={!editing}
+        onDragStart={(e) => {
+          draggedId = node.id;
+          setDragging(true);
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', node.id);
+        }}
+        onDragEnd={() => {
+          draggedId = null;
+          setDragging(false);
+          setDropZone(null);
+        }}
+        onDragOver={handleDragOver}
+        onDragLeave={() => setDropZone(null)}
+        onDrop={handleDrop}
         className={cn(
           'group/item relative flex items-center gap-1 rounded-md pr-1 text-sm',
           'transition-colors',
           isActive ? 'bg-primary/10 text-foreground' : 'text-muted-foreground hover:bg-surface-hover',
+          dropZone === 'inside' && 'ring-2 ring-inset ring-primary/50',
+          dragging && 'opacity-40',
         )}
         style={{ paddingLeft: depth * 14 + 4 }}
       >
+        {dropZone === 'before' && (
+          <span className="pointer-events-none absolute inset-x-1 -top-px h-0.5 rounded-full bg-primary" />
+        )}
+        {dropZone === 'after' && (
+          <span className="pointer-events-none absolute inset-x-1 -bottom-px h-0.5 rounded-full bg-primary" />
+        )}
         <button
           type="button"
           aria-label={expanded ? 'Collapse' : 'Expand'}
