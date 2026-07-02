@@ -1,0 +1,45 @@
+import { Search, PanelLeft } from 'lucide-react';
+import { useWorkspace } from '../state/workspace';
+import { IconButton } from '../components/IconButton';
+import { Kbd } from '../components/Kbd';
+
+interface TopbarProps {
+  onOpenSearch: () => void;
+  onToggleSidebar: () => void;
+}
+
+export function Topbar({ onOpenSearch, onToggleSidebar }: TopbarProps): JSX.Element {
+  const workspaceName = useWorkspace((s) => s.workspaceName);
+  const activeDoc = useWorkspace((s) => s.activeDoc);
+
+  return (
+    <header className="flex h-11 shrink-0 items-center gap-2 border-b border-border bg-background/70 px-3 backdrop-blur">
+      <IconButton label="Toggle sidebar" size="sm" onClick={onToggleSidebar}>
+        <PanelLeft size={16} />
+      </IconButton>
+
+      <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5 text-sm">
+        <span className="shrink-0 text-muted-foreground">{workspaceName}</span>
+        {activeDoc && (
+          <>
+            <span className="text-subtle">/</span>
+            <span className="flex min-w-0 items-center gap-1.5 text-foreground">
+              {activeDoc.icon && <span className="shrink-0">{activeDoc.icon}</span>}
+              <span className="truncate font-medium">{activeDoc.title || 'Untitled'}</span>
+            </span>
+          </>
+        )}
+      </nav>
+
+      <button
+        type="button"
+        onClick={onOpenSearch}
+        className="ml-auto flex items-center gap-2 rounded-md border border-border bg-surface px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-surface-hover"
+      >
+        <Search size={13} />
+        <span className="hidden sm:inline">Search</span>
+        <Kbd className="hidden sm:inline-flex">⌘K</Kbd>
+      </button>
+    </header>
+  );
+}

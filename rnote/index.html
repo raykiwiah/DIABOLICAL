@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-mode="millennial">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="RNOTE — a beautiful, intelligent, offline-first Personal Life Operating System." />
+    <title>RNOTE</title>
+    <!--
+      Prevent a flash of the wrong theme: apply persisted preferences before first paint.
+      This is intentionally inline and tiny; it runs before the React bundle loads.
+    -->
+    <script>
+      (function () {
+        try {
+          var root = document.documentElement;
+          var theme = localStorage.getItem('rnote.theme');
+          var mode = localStorage.getItem('rnote.mode');
+          if (theme === 'dark' || theme === 'light') {
+            root.setAttribute('data-theme', theme);
+          } else {
+            var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            root.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+          }
+          if (mode === 'genz' || mode === 'millennial') {
+            root.setAttribute('data-mode', mode);
+          }
+          if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            root.setAttribute('data-reduced-motion', 'true');
+          }
+        } catch (e) {
+          /* localStorage unavailable — fall back to markup defaults. */
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

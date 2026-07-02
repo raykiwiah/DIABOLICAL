@@ -1,0 +1,161 @@
+/**
+ * RNOTE design tokens.
+ *
+ * Two orthogonal axes drive the entire look:
+ *   data-theme = light | dark      → neutral lightness + contrast
+ *   data-mode  = millennial | genz → personality (hue, radius, motion, glow)
+ *
+ * The four blocks below are ordered so specificity resolves every combination
+ * deterministically. Fonts are system stacks only — RNOTE never depends on a
+ * network to render (offline-first).
+ */
+
+/* ── Millennial · Light (defaults) ──────────────────────────────────────── */
+:root,
+[data-mode='millennial'] {
+  --background: 240 20% 99%;
+  --surface: 0 0% 100%;
+  --surface-hover: 240 16% 96%;
+  --elevated: 0 0% 100%;
+  --overlay: 240 14% 7%;
+
+  --foreground: 240 18% 13%;
+  --muted: 240 16% 95%;
+  --muted-foreground: 240 7% 44%;
+  --subtle: 240 8% 58%;
+
+  --border: 240 14% 90%;
+  --border-strong: 240 12% 82%;
+  --ring: 234 76% 58%;
+
+  --primary: 234 68% 55%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 234 68% 55%;
+  --accent-foreground: 0 0% 100%;
+
+  --success: 152 56% 38%;
+  --warning: 33 92% 48%;
+  --danger: 356 72% 52%;
+  --info: 210 88% 52%;
+
+  --radius: 8px;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto,
+    Helvetica, Arial, sans-serif;
+  --font-display: var(--font-sans);
+  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', 'Cascadia Code',
+    Menlo, Consolas, monospace;
+
+  --shadow-xs: 0 1px 2px hsl(240 14% 10% / 0.05);
+  --shadow-sm: 0 1px 3px hsl(240 14% 10% / 0.08), 0 1px 2px hsl(240 14% 10% / 0.04);
+  --shadow-md: 0 4px 12px hsl(240 14% 10% / 0.09), 0 2px 4px hsl(240 14% 10% / 0.05);
+  --shadow-lg: 0 12px 32px hsl(240 14% 10% / 0.12), 0 4px 8px hsl(240 14% 10% / 0.06);
+  --shadow-glow: 0 0 0 transparent;
+
+  /* Motion scale — Millennial is calm and restrained. */
+  --motion-scale: 0.7;
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+}
+
+/* ── Millennial · Dark ──────────────────────────────────────────────────── */
+[data-theme='dark'] {
+  --background: 240 14% 8%;
+  --surface: 240 13% 11%;
+  --surface-hover: 240 11% 16%;
+  --elevated: 240 13% 13%;
+  --overlay: 240 30% 2%;
+
+  --foreground: 240 18% 92%;
+  --muted: 240 11% 17%;
+  --muted-foreground: 240 8% 62%;
+  --subtle: 240 8% 46%;
+
+  --border: 240 10% 21%;
+  --border-strong: 240 10% 30%;
+  --ring: 234 84% 68%;
+
+  --primary: 234 82% 67%;
+  --primary-foreground: 240 30% 8%;
+  --accent: 234 82% 67%;
+  --accent-foreground: 240 30% 8%;
+
+  --success: 152 52% 50%;
+  --warning: 36 92% 58%;
+  --danger: 356 78% 64%;
+  --info: 210 88% 64%;
+
+  --shadow-xs: 0 1px 2px hsl(0 0% 0% / 0.3);
+  --shadow-sm: 0 1px 3px hsl(0 0% 0% / 0.4), 0 1px 2px hsl(0 0% 0% / 0.3);
+  --shadow-md: 0 4px 14px hsl(0 0% 0% / 0.45), 0 2px 4px hsl(0 0% 0% / 0.3);
+  --shadow-lg: 0 14px 40px hsl(0 0% 0% / 0.55), 0 4px 10px hsl(0 0% 0% / 0.4);
+}
+
+/* ── Gen Z · Light (personality overrides) ──────────────────────────────── */
+[data-mode='genz'] {
+  --background: 264 40% 99%;
+  --surface: 0 0% 100%;
+  --surface-hover: 264 44% 96%;
+  --elevated: 0 0% 100%;
+  --overlay: 264 40% 8%;
+
+  --foreground: 264 30% 14%;
+  --muted: 264 40% 96%;
+  --muted-foreground: 264 12% 45%;
+  --subtle: 264 12% 60%;
+
+  --border: 264 30% 91%;
+  --border-strong: 264 26% 84%;
+  --ring: 265 88% 62%;
+
+  --primary: 265 85% 60%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 330 85% 60%;
+  --accent-foreground: 0 0% 100%;
+
+  --radius: 14px;
+  --font-display: 'SF Pro Rounded', ui-rounded, 'Hiragino Maru Gothic ProN',
+    var(--font-sans);
+
+  --shadow-glow: 0 0 0 1px hsl(265 85% 60% / 0.12), 0 8px 30px hsl(265 85% 60% / 0.22);
+
+  /* Gen Z leans into motion and delight. */
+  --motion-scale: 1;
+  --duration-fast: 160ms;
+  --duration-base: 260ms;
+}
+
+/* ── Gen Z · Dark (highest specificity — fully specified) ────────────────── */
+[data-mode='genz'][data-theme='dark'] {
+  --background: 265 32% 7%;
+  --surface: 265 28% 10%;
+  --surface-hover: 265 24% 15%;
+  --elevated: 265 26% 12%;
+  --overlay: 265 45% 2%;
+
+  --foreground: 264 30% 93%;
+  --muted: 265 22% 16%;
+  --muted-foreground: 264 14% 64%;
+  --subtle: 264 12% 48%;
+
+  --border: 265 22% 20%;
+  --border-strong: 265 22% 30%;
+  --ring: 265 92% 72%;
+
+  --primary: 265 92% 72%;
+  --primary-foreground: 265 45% 8%;
+  --accent: 330 92% 70%;
+  --accent-foreground: 330 45% 8%;
+
+  --success: 152 55% 55%;
+  --warning: 36 95% 62%;
+  --danger: 356 85% 70%;
+  --info: 210 90% 68%;
+
+  --shadow-glow: 0 0 0 1px hsl(265 92% 72% / 0.2), 0 10px 40px hsl(265 92% 72% / 0.3);
+}
+
+/* Respect the user's system-level reduced-motion request. */
+[data-reduced-motion='true'] {
+  --motion-scale: 0;
+}
