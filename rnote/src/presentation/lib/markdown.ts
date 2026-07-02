@@ -38,6 +38,8 @@ function serializeBlock(node: RichNode, depth: number): string {
     }
     case 'horizontalRule':
       return '---';
+    case 'image':
+      return `![${(node.attrs?.alt as string) ?? ''}](${(node.attrs?.src as string) ?? ''})`;
     case 'callout': {
       const icon = (node.attrs?.icon as string) ?? '💡';
       return prefixLines(childBlocks(node, depth), '> ').replace(/^> /, `> ${icon} `);

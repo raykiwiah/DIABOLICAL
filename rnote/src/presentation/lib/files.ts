@@ -32,6 +32,27 @@ export function pickTextFile(accept = 'application/json,.json'): Promise<string 
   });
 }
 
+/** Open an image picker and resolve the chosen image as a data URL. */
+export function pickImageDataUrl(): Promise<string | null> {
+  return new Promise((resolve) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (!file) {
+        resolve(null);
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : null);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
+    };
+    input.click();
+  });
+}
+
 /** Filesystem-safe slug for a document title used as a filename. */
 export function slugify(title: string, fallback = 'untitled'): string {
   const slug = title

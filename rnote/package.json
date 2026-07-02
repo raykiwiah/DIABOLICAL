@@ -23,6 +23,7 @@
     "@tiptap/extension-details": "^2.27.2",
     "@tiptap/extension-details-content": "^2.26.2",
     "@tiptap/extension-details-summary": "^2.26.2",
+    "@tiptap/extension-image": "^2.27.2",
     "@tiptap/extension-link": "^2.27.2",
     "@tiptap/extension-placeholder": "^2.10.3",
     "@tiptap/extension-task-item": "^2.10.3",

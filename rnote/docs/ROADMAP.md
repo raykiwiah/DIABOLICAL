@@ -68,8 +68,8 @@ Theme studio ▷ · Widget studio ▷ · Marketplace ▷ · PWA installable ✅
 - [x] **I2 · Templates gallery.** ✅ Template picker (Blank, Daily note, Journal,
       Meeting notes, Habit tracker, Reading list, Project, Goal) with seeded rich
       content; create-with-content use case; opened from Home + ⌘K.
-- [ ] **I3 · Block expansion.** Columns, image block (stored locally as data
-      URL/blob in IndexedDB), bookmark (URL card), and a basic table block.
+- [◐] **I3 · Block expansion.** ✅ Image block (inline data-URL, offline-safe,
+      exports to Markdown). ▷ Remaining: columns, bookmark (URL card), table.
 - [ ] **I4 · Quick capture + Focus mode + Reading mode.** Global quick-capture
       (⌘⇧N) to an inbox; distraction-free focus toggle; read-only reading view.
 - [ ] **I5 · Gamification (Gen Z).** XP, levels, streaks, achievements, a stats

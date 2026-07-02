@@ -12,8 +12,10 @@ import {
   Minus,
   Lightbulb,
   ListCollapse,
+  Image as ImageIcon,
   type LucideIcon,
 } from 'lucide-react';
+import { pickImageDataUrl } from '../lib/files';
 
 export interface SlashCommand {
   id: string;
@@ -117,6 +119,18 @@ export const SLASH_COMMANDS: SlashCommand[] = [
     icon: ListCollapse,
     keywords: ['toggle', 'collapse', 'details', 'accordion', 'expand'],
     run: (e) => e.chain().focus().setDetails().run(),
+  },
+  {
+    id: 'image',
+    title: 'Image',
+    description: 'Upload an image',
+    icon: ImageIcon,
+    keywords: ['image', 'picture', 'photo', 'upload', 'img'],
+    run: (e) => {
+      void pickImageDataUrl().then((src) => {
+        if (src) e.chain().focus().setImage({ src }).run();
+      });
+    },
   },
   {
     id: 'divider',

@@ -312,3 +312,16 @@
 .rn-editor .ProseMirror [data-type='detailsContent'][hidden] {
   display: none;
 }
+
+/* Images */
+.rn-editor .ProseMirror img.rn-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+  margin: 0.5rem 0;
+}
+.rn-editor .ProseMirror img.rn-image.ProseMirror-selectednode {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}

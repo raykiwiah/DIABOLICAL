@@ -5,6 +5,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import LinkExtension from '@tiptap/extension-link';
+import Image from '@tiptap/extension-image';
 import Details from '@tiptap/extension-details';
 import DetailsSummary from '@tiptap/extension-details-summary';
 import DetailsContent from '@tiptap/extension-details-content';
@@ -136,6 +137,7 @@ export function Editor({ initialContent, onChange, editable = true }: EditorProp
         autolink: true,
         HTMLAttributes: { rel: 'noopener noreferrer nofollow', target: '_blank' },
       }),
+      Image.configure({ HTMLAttributes: { class: 'rn-image' } }),
       Placeholder.configure({
         placeholder: ({ node }) =>
           node.type.name === 'heading' ? 'Heading' : "Write, or press '/' for commands…",
