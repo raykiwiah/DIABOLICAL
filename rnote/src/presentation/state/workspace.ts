@@ -16,10 +16,12 @@ interface WorkspaceState {
   activeDoc: DocumentDetail | null;
   saving: boolean;
   archived: DocumentSummary[];
+  view: 'home' | 'document';
 
   bootstrap: () => Promise<void>;
   refreshTree: () => Promise<void>;
   open: (id: string) => Promise<void>;
+  showHome: () => void;
   createDocument: (parentId?: string | null) => Promise<string | null>;
   rename: (id: string, title: string) => Promise<void>;
   setIcon: (id: string, icon: string) => Promise<void>;
@@ -47,6 +49,7 @@ export const useWorkspace = create<WorkspaceState>((set, get) => ({
   activeDoc: null,
   saving: false,
   archived: [],
+  view: 'home',
 
   bootstrap: async () => {
     if (get().status !== 'idle') return;
@@ -71,9 +74,8 @@ export const useWorkspace = create<WorkspaceState>((set, get) => ({
       }
     }
 
-    set({ tree, status: 'ready' });
-    const first = tree[0];
-    if (first) await get().open(first.id);
+    // Land on the Home dashboard rather than auto-opening a page.
+    set({ tree, status: 'ready', view: 'home' });
   },
 
   refreshTree: async () => {
@@ -89,8 +91,10 @@ export const useWorkspace = create<WorkspaceState>((set, get) => ({
     const path = findPath(get().tree, id) ?? [];
     const expanded = { ...get().expanded };
     for (const ancestor of path) expanded[ancestor] = true;
-    set({ activeId: id, activeDoc: detail, expanded });
+    set({ activeId: id, activeDoc: detail, expanded, view: 'document' });
   },
+
+  showHome: () => set({ view: 'home' }),
 
   createDocument: async (parentId = null) => {
     const { workspaceId } = get();

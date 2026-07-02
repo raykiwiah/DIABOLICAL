@@ -1,10 +1,11 @@
 import { useState, lazy, Suspense } from 'react';
-import { Search, Plus, Sparkles, Trash2 } from 'lucide-react';
+import { Search, Plus, Sparkles, Trash2, Home as HomeIcon } from 'lucide-react';
 import { useWorkspace } from '../state/workspace';
 import { usePreferences } from '../state/preferences';
 import { DocTreeItem } from './DocTreeItem';
 import { Kbd } from '../components/Kbd';
 import { ThemeModeControls } from '../components/ThemeModeControls';
+import { cn } from '../lib/cn';
 
 const TrashModal = lazy(() =>
   import('../trash/TrashModal').then((m) => ({ default: m.TrashModal })),
@@ -18,6 +19,8 @@ export function Sidebar({ onOpenSearch }: SidebarProps): JSX.Element {
   const workspaceName = useWorkspace((s) => s.workspaceName);
   const tree = useWorkspace((s) => s.tree);
   const createDocument = useWorkspace((s) => s.createDocument);
+  const showHome = useWorkspace((s) => s.showHome);
+  const view = useWorkspace((s) => s.view);
   const mode = usePreferences((s) => s.mode);
   const [trashOpen, setTrashOpen] = useState(false);
 
@@ -37,6 +40,19 @@ export function Sidebar({ onOpenSearch }: SidebarProps): JSX.Element {
       </div>
 
       <div className="px-2.5 pb-1">
+        <button
+          type="button"
+          onClick={showHome}
+          className={cn(
+            'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
+            view === 'home'
+              ? 'bg-primary/10 text-foreground'
+              : 'text-muted-foreground hover:bg-surface-hover',
+          )}
+        >
+          <HomeIcon size={15} />
+          <span className="flex-1 text-left">Home</span>
+        </button>
         <button
           type="button"
           onClick={onOpenSearch}

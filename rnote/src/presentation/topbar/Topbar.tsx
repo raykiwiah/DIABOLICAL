@@ -11,6 +11,7 @@ interface TopbarProps {
 export function Topbar({ onOpenSearch, onToggleSidebar }: TopbarProps): JSX.Element {
   const workspaceName = useWorkspace((s) => s.workspaceName);
   const activeDoc = useWorkspace((s) => s.activeDoc);
+  const view = useWorkspace((s) => s.view);
 
   return (
     <header className="flex h-11 shrink-0 items-center gap-2 border-b border-border bg-background/70 px-3 backdrop-blur">
@@ -20,14 +21,16 @@ export function Topbar({ onOpenSearch, onToggleSidebar }: TopbarProps): JSX.Elem
 
       <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5 text-sm">
         <span className="shrink-0 text-muted-foreground">{workspaceName}</span>
-        {activeDoc && (
-          <>
-            <span className="text-subtle">/</span>
-            <span className="flex min-w-0 items-center gap-1.5 text-foreground">
-              {activeDoc.icon && <span className="shrink-0">{activeDoc.icon}</span>}
-              <span className="truncate font-medium">{activeDoc.title || 'Untitled'}</span>
-            </span>
-          </>
+        <span className="text-subtle">/</span>
+        {view === 'home' ? (
+          <span className="font-medium text-foreground">Home</span>
+        ) : activeDoc ? (
+          <span className="flex min-w-0 items-center gap-1.5 text-foreground">
+            {activeDoc.icon && <span className="shrink-0">{activeDoc.icon}</span>}
+            <span className="truncate font-medium">{activeDoc.title || 'Untitled'}</span>
+          </span>
+        ) : (
+          <span className="text-muted-foreground">…</span>
         )}
       </nav>
 

@@ -3,6 +3,8 @@ import { AnimatePresence } from 'framer-motion';
 import { Sidebar } from '../sidebar/Sidebar';
 import { Topbar } from '../topbar/Topbar';
 import { DocumentEditor } from '../editor/DocumentEditor';
+import { Home } from '../home/Home';
+import { useWorkspace } from '../state/workspace';
 import { useHotkey } from '../hooks/useHotkey';
 
 // The palette is only needed once the user reaches for it (⌘K).
@@ -14,6 +16,7 @@ const CommandPalette = lazy(() =>
 export function AppShell(): JSX.Element {
   const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 768);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const view = useWorkspace((s) => s.view);
 
   useHotkey('k', () => setPaletteOpen((o) => !o), { meta: true, allowInEditable: true });
   useHotkey('\\', () => setSidebarOpen((o) => !o), { meta: true, allowInEditable: true });
@@ -28,7 +31,7 @@ export function AppShell(): JSX.Element {
           onToggleSidebar={() => setSidebarOpen((o) => !o)}
         />
         <main className="min-h-0 flex-1">
-          <DocumentEditor />
+          {view === 'home' ? <Home /> : <DocumentEditor />}
         </main>
       </div>
 
