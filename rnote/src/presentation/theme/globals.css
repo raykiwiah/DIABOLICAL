@@ -229,11 +229,86 @@
 }
 
 /* Placeholder for empty first line and empty blocks. */
-.rn-editor .ProseMirror .is-editor-empty:first-child::before,
-.rn-editor .ProseMirror .is-empty::before {
+/* Placeholder only on empty text blocks — never on container nodes (callout,
+   toggle), whose is-empty pseudo-element would otherwise disrupt their layout. */
+.rn-editor .ProseMirror p.is-empty::before,
+.rn-editor .ProseMirror h1.is-empty::before,
+.rn-editor .ProseMirror h2.is-empty::before,
+.rn-editor .ProseMirror h3.is-empty::before {
   content: attr(data-placeholder);
   float: left;
   height: 0;
   pointer-events: none;
   color: hsl(var(--subtle));
+}
+
+/* Callout — emphasized block with an icon in the gutter. */
+.rn-editor .ProseMirror div[data-type='callout'] {
+  position: relative;
+  margin: 0.5rem 0;
+  padding: 0.85rem 1rem 0.85rem 2.75rem;
+  background: hsl(var(--muted));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+}
+.rn-editor .ProseMirror div[data-type='callout']::before {
+  content: attr(data-icon);
+  position: absolute;
+  left: 0.9rem;
+  top: 0.78rem;
+  font-size: 1.05rem;
+  line-height: 1.4;
+}
+.rn-editor .ProseMirror div[data-type='callout'] > *:first-child {
+  margin-top: 0;
+}
+.rn-editor .ProseMirror div[data-type='callout'] > *:last-child {
+  margin-bottom: 0;
+}
+
+/* Toggle (collapsible details) — a chevron gutter that rotates when open. */
+.rn-editor .ProseMirror [data-type='details'] {
+  display: flex;
+  gap: 0.4rem;
+  margin: 0.4rem 0;
+}
+.rn-editor .ProseMirror [data-type='details'] > button {
+  flex: 0 0 auto;
+  width: 1.4rem;
+  height: 1.6rem;
+  margin-top: 0.05rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: hsl(var(--subtle));
+  cursor: pointer;
+  border-radius: 4px;
+}
+.rn-editor .ProseMirror [data-type='details'] > button:hover {
+  background: hsl(var(--surface-hover));
+  color: hsl(var(--foreground));
+}
+.rn-editor .ProseMirror [data-type='details'] > button::before {
+  content: '';
+  border-left: 5px solid currentColor;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transition: transform var(--duration-fast) ease;
+}
+.rn-editor .ProseMirror [data-type='details'][open] > button::before {
+  transform: rotate(90deg);
+}
+.rn-editor .ProseMirror [data-type='details'] > div {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.rn-editor .ProseMirror [data-type='details'] summary {
+  list-style: none;
+  cursor: text;
+  font-weight: 550;
+}
+.rn-editor .ProseMirror [data-type='detailsContent'][hidden] {
+  display: none;
 }

@@ -4,11 +4,16 @@ import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
+import LinkExtension from '@tiptap/extension-link';
+import Details from '@tiptap/extension-details';
+import DetailsSummary from '@tiptap/extension-details-summary';
+import DetailsContent from '@tiptap/extension-details-content';
 import { AnimatePresence } from 'framer-motion';
-import { Bold, Italic, Strikethrough, Code } from 'lucide-react';
+import { Bold, Italic, Strikethrough, Code, Link as LinkIcon } from 'lucide-react';
 import type { RichDoc } from '@domain/blocks';
 import { SLASH_COMMANDS, filterCommands, type SlashCommand } from './commands';
 import { SlashMenu } from './SlashMenu';
+import { Callout } from './extensions/Callout';
 import { cn } from '../lib/cn';
 
 interface EditorProps {
@@ -122,6 +127,15 @@ export function Editor({ initialContent, onChange, editable = true }: EditorProp
       StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
       TaskList,
       TaskItem.configure({ nested: true }),
+      Callout,
+      Details.configure({ persist: true, HTMLAttributes: { class: 'rn-toggle' } }),
+      DetailsSummary,
+      DetailsContent,
+      LinkExtension.configure({
+        openOnClick: false,
+        autolink: true,
+        HTMLAttributes: { rel: 'noopener noreferrer nofollow', target: '_blank' },
+      }),
       Placeholder.configure({
         placeholder: ({ node }) =>
           node.type.name === 'heading' ? 'Heading' : "Write, or press '/' for commands…",
@@ -165,6 +179,9 @@ export function Editor({ initialContent, onChange, editable = true }: EditorProp
           </MarkButton>
           <MarkButton label="Inline code" active={editor.isActive('code')} onClick={() => editor.chain().focus().toggleCode().run()}>
             <Code size={15} />
+          </MarkButton>
+          <MarkButton label="Link" active={editor.isActive('link')} onClick={() => promptLink(editor)}>
+            <LinkIcon size={15} />
           </MarkButton>
         </BubbleMenu>
       )}
@@ -214,4 +231,17 @@ function MarkButton({
       {children}
     </button>
   );
+}
+
+/** Prompt for a URL and apply/remove a link over the current selection. */
+function promptLink(editor: TiptapEditor): void {
+  const previous = editor.getAttributes('link').href as string | undefined;
+  const url = window.prompt('Link URL', previous ?? 'https://');
+  if (url === null) return; // cancelled
+  const trimmed = url.trim();
+  if (trimmed === '') {
+    editor.chain().focus().extendMarkRange('link').unsetLink().run();
+    return;
+  }
+  editor.chain().focus().extendMarkRange('link').setLink({ href: trimmed }).run();
 }

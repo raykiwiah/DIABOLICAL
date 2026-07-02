@@ -10,6 +10,8 @@ import {
   TextQuote,
   Code2,
   Minus,
+  Lightbulb,
+  ListCollapse,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -99,6 +101,22 @@ export const SLASH_COMMANDS: SlashCommand[] = [
     icon: Code2,
     keywords: ['code', 'snippet', 'pre', 'monospace'],
     run: (e) => e.chain().focus().toggleCodeBlock().run(),
+  },
+  {
+    id: 'callout',
+    title: 'Callout',
+    description: 'Make text stand out',
+    icon: Lightbulb,
+    keywords: ['callout', 'note', 'info', 'tip', 'aside', 'highlight'],
+    run: (e) => e.chain().focus().toggleCallout().run(),
+  },
+  {
+    id: 'toggle',
+    title: 'Toggle',
+    description: 'A collapsible section',
+    icon: ListCollapse,
+    keywords: ['toggle', 'collapse', 'details', 'accordion', 'expand'],
+    run: (e) => e.chain().focus().setDetails().run(),
   },
   {
     id: 'divider',
