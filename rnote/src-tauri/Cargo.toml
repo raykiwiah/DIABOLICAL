@@ -1,0 +1,26 @@
+[package]
+name = "rnote"
+version = "0.1.0"
+description = "RNOTE — offline-first Personal Life Operating System"
+authors = ["RNOTE"]
+edition = "2021"
+rust-version = "1.77.2"
+
+# The desktop entrypoint links against this library (also enables mobile targets).
+[lib]
+name = "rnote_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+# SQLite persistence exposed to the frontend via @tauri-apps/plugin-sql.
+tauri-plugin-sql = { version = "2", features = ["sqlite"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[features]
+# Smaller, faster release builds.
+custom-protocol = ["tauri/custom-protocol"]

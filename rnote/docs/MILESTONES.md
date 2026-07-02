@@ -25,13 +25,16 @@ The core that everything else extends.
 - **Quality** — strict TypeScript, ESLint clean, 25 passing tests, optimized
   code-split build.
 
-## ▶ Milestone 2 — Editor depth & content model
+## ◐ Milestone 2 — Editor depth & content model (in progress)
 
-- Block drag-and-drop reordering with a drag handle; nested block indentation.
-- Slash menu upgraded to Tiptap Suggestion; inline formatting bubble menu.
-- Callouts, toggles, columns, images/files (stored locally), embeds, equations.
-- Markdown paste/import + export; per-page version history (event-sourced).
-- Trash view with restore/permanent-delete.
+- ✅ Inline formatting bubble menu (bold / italic / strike / code / link).
+- ✅ Callouts and toggles (collapsible sections).
+- ✅ Markdown input rules (#, -, >, ```, 1.).
+- ✅ Trash view with restore / permanent-delete.
+- ✅ Sidebar drag-and-drop to reorder and nest pages.
+- ▷ Block drag-and-drop reordering with a drag handle; nested block indentation.
+- ▷ Columns, images/files (stored locally), embeds, equations.
+- ▷ Markdown paste/import + export; per-page version history (event-sourced).
 
 ## ▶ Milestone 3 — Databases
 
