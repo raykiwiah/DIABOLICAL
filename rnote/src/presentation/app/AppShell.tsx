@@ -6,6 +6,7 @@ import { Topbar } from '../topbar/Topbar';
 import { DocumentEditor } from '../editor/DocumentEditor';
 import { Home } from '../home/Home';
 import { CollectionView } from '../collection/CollectionView';
+import { TimeMachine } from '../timeline/TimeMachine';
 import { Celebration } from '../gamification/Celebration';
 import { useWorkspace } from '../state/workspace';
 import { useViewMode } from '../state/viewMode';
@@ -127,6 +128,8 @@ export function AppShell(): JSX.Element {
             <Home />
           ) : view === 'collection' ? (
             <CollectionView key={`${activeCollection?.kind}:${activeCollection?.label}`} />
+          ) : view === 'timeline' ? (
+            <TimeMachine />
           ) : (
             <DocumentEditor />
           )}

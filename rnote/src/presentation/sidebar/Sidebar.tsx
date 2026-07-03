@@ -1,5 +1,5 @@
 import { useState, lazy, Suspense } from 'react';
-import { Search, Plus, Sparkles, Trash2, Home as HomeIcon, CalendarDays, Settings } from 'lucide-react';
+import { Search, Plus, Sparkles, Trash2, Home as HomeIcon, CalendarDays, Settings, History } from 'lucide-react';
 import { useWorkspace } from '../state/workspace';
 import { usePreferences } from '../state/preferences';
 import { DocTreeItem } from './DocTreeItem';
@@ -24,6 +24,7 @@ export function Sidebar({ onOpenSearch }: SidebarProps): JSX.Element {
   const createDocument = useWorkspace((s) => s.createDocument);
   const showHome = useWorkspace((s) => s.showHome);
   const openToday = useWorkspace((s) => s.openToday);
+  const openTimeline = useWorkspace((s) => s.openTimeline);
   const view = useWorkspace((s) => s.view);
   const mode = usePreferences((s) => s.mode);
   const [trashOpen, setTrashOpen] = useState(false);
@@ -64,6 +65,19 @@ export function Sidebar({ onOpenSearch }: SidebarProps): JSX.Element {
         >
           <CalendarDays size={15} />
           <span className="flex-1 text-left">Today</span>
+        </button>
+        <button
+          type="button"
+          onClick={openTimeline}
+          className={cn(
+            'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
+            view === 'timeline'
+              ? 'bg-primary/10 text-foreground'
+              : 'text-muted-foreground hover:bg-surface-hover',
+          )}
+        >
+          <History size={15} />
+          <span className="flex-1 text-left">Time Machine</span>
         </button>
         <button
           type="button"

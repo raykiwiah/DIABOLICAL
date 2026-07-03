@@ -55,7 +55,9 @@ path) · AI assistant ▷ · AI chat with notes ▷ · Auto-organization ◐ (Up
 offline heuristics + VO + Dexie persistence + auto-file-on-save + Smart Collections
 sidebar/views + editable organization bar ✅; AI extraction pipeline (debounced,
 cancellable, degrades to heuristics) + corrections learning ✅) ·
-Time Machine ▷ (Upgrade 2 · C) · Adaptive AI ▷ · AI companion ▷ ·
+Time Machine ◐ (Upgrade 2 · C — activity log + coalescing + TimelineService +
+month/day chapters with offline statistical digests + search/project filter ✅;
+AI recaps + natural-language ask ▷) · Adaptive AI ▷ · AI companion ▷ ·
 OCR ⛔(needs model) · Voice notes ◐(Web Speech API possible) · Meeting notes ▷ ·
 PDF annotate/summarize ▷ · Document scanner ⛔(camera/native)
 

@@ -15,6 +15,7 @@ import {
   Maximize2,
   BookOpen,
   Settings,
+  History,
   Zap,
 } from 'lucide-react';
 import type { DocumentTreeNode } from '@application/dto';
@@ -54,6 +55,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps): JSX.Elem
   const openDoc = useWorkspace((s) => s.open);
   const createDocument = useWorkspace((s) => s.createDocument);
   const search = useWorkspace((s) => s.search);
+  const openTimeline = useWorkspace((s) => s.openTimeline);
   const mode = usePreferences((s) => s.mode);
   const theme = usePreferences((s) => s.theme);
   const toggleTheme = usePreferences((s) => s.toggleTheme);
@@ -125,6 +127,14 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps): JSX.Elem
         title: reading ? 'Exit reading mode' : 'Enter reading mode',
         subtitle: 'Distraction-free, read-only',
         run: toggleReading,
+      },
+      {
+        key: 'time-machine',
+        group: 'Actions',
+        icon: <History size={16} />,
+        title: 'Open Time Machine',
+        subtitle: 'Travel through your history',
+        run: () => openTimeline(),
       },
       {
         key: 'open-settings',
@@ -217,6 +227,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps): JSX.Elem
     toggleTheme,
     toggleFocus,
     toggleReading,
+    openTimeline,
   ]);
 
   useEffect(() => {

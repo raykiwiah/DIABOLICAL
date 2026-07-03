@@ -1,6 +1,7 @@
 import { DocumentService } from '@application/documents/DocumentService';
 import { WorkspaceService } from '@application/workspace/WorkspaceService';
 import { OrganizationService } from '@application/organization/OrganizationService';
+import { TimelineService } from '@application/timeline/TimelineService';
 import type { SearchIndexPort } from '@application/ports/SearchIndex';
 import type { DocumentRepository } from '@application/ports/DocumentRepository';
 import type { WorkspaceRepository } from '@application/ports/WorkspaceRepository';
@@ -8,6 +9,7 @@ import { getDatabase } from '@infrastructure/persistence/dexie/database';
 import { DexieDocumentRepository } from '@infrastructure/persistence/dexie/DexieDocumentRepository';
 import { DexieWorkspaceRepository } from '@infrastructure/persistence/dexie/DexieWorkspaceRepository';
 import { DexieOrganizationRepository } from '@infrastructure/persistence/dexie/DexieOrganizationRepository';
+import { DexieActivityRepository } from '@infrastructure/persistence/dexie/DexieActivityRepository';
 import { TauriSqliteDocumentRepository } from '@infrastructure/persistence/sqlite/TauriSqliteDocumentRepository';
 import { TauriSqliteWorkspaceRepository } from '@infrastructure/persistence/sqlite/TauriSqliteWorkspaceRepository';
 import { FlexSearchIndex } from '@infrastructure/search/FlexSearchIndex';
@@ -27,6 +29,7 @@ export interface Container {
   documents: DocumentService;
   workspaces: WorkspaceService;
   organization: OrganizationService;
+  timeline: TimelineService;
   search: SearchIndexPort;
 }
 
@@ -52,11 +55,13 @@ export function createContainer(): Container {
   // Tauri shell — documents may be in SQLite, but collections are a browser-side
   // query concern and this keeps the desktop path working without a SQLite port.
   const organizationRepository = new DexieOrganizationRepository(getDatabase());
+  const activityRepository = new DexieActivityRepository(getDatabase());
 
   return {
     documents: new DocumentService(documentRepository, search, clock),
     workspaces: new WorkspaceService(workspaceRepository, clock),
     organization: new OrganizationService(organizationRepository),
+    timeline: new TimelineService(activityRepository),
     search,
   };
 }

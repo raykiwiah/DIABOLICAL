@@ -6,6 +6,8 @@ import type { SearchHit } from '@application/ports/SearchIndex';
 import { container } from '@/composition/container';
 import { useGameStats } from './gameStats';
 import { useOrganization } from './organization';
+import { useTimeline } from './timeline';
+import { extractText } from '@domain/blocks';
 import type { CollectionKind } from '../lib/collections';
 import { WELCOME_DOC } from './welcome';
 import {
@@ -25,7 +27,7 @@ interface WorkspaceState {
   activeDoc: DocumentDetail | null;
   saving: boolean;
   archived: DocumentSummary[];
-  view: 'home' | 'document' | 'collection';
+  view: 'home' | 'document' | 'collection' | 'timeline';
   activeCollection: { kind: CollectionKind; label: string } | null;
 
   bootstrap: () => Promise<void>;
@@ -33,6 +35,7 @@ interface WorkspaceState {
   open: (id: string) => Promise<void>;
   showHome: () => void;
   openCollection: (kind: CollectionKind, label: string) => void;
+  openTimeline: () => void;
   createDocument: (parentId?: string | null) => Promise<string | null>;
   createFromTemplate: (template: PageTemplate) => Promise<void>;
   /** Append a thought to the 📥 Inbox (creating it on first use) without navigating; returns its id. */
@@ -125,6 +128,12 @@ export const useWorkspace = create<WorkspaceState>((set, get) => ({
 
   openCollection: (kind, label) => set({ view: 'collection', activeCollection: { kind, label } }),
 
+  openTimeline: () => {
+    set({ view: 'timeline' });
+    const { workspaceId } = get();
+    if (workspaceId) void useTimeline.getState().load(workspaceId);
+  },
+
   createDocument: async (parentId = null) => {
     const { workspaceId } = get();
     if (!workspaceId) return null;
@@ -136,6 +145,7 @@ export const useWorkspace = create<WorkspaceState>((set, get) => ({
     if (parentId) set({ expanded: { ...get().expanded, [parentId]: true } });
     await get().open(created.value.id);
     useGameStats.getState().recordAction('page');
+    void useTimeline.getState().record({ workspaceId, docId: created.value.id, kind: 'created', title: 'Untitled', snippet: '' });
     return created.value.id;
   },
 
@@ -149,6 +159,7 @@ export const useWorkspace = create<WorkspaceState>((set, get) => ({
     await get().open(created.value.id);
     useGameStats.getState().recordAction('template');
     void useOrganization.getState().analyzeDoc({ docId: created.value.id, workspaceId, title, content });
+    void useTimeline.getState().record({ workspaceId, docId: created.value.id, kind: 'created', title, snippet: extractText(content) });
   },
 
   quickCapture: async (rawText) => {
@@ -179,6 +190,7 @@ export const useWorkspace = create<WorkspaceState>((set, get) => ({
     if (get().activeId === inboxId) await get().open(inboxId);
     useGameStats.getState().recordAction('capture');
     void useOrganization.getState().analyzeDoc({ docId: inboxId, workspaceId, title: 'Inbox', content: updated });
+    void useTimeline.getState().record({ workspaceId, docId: inboxId, kind: 'captured', title: 'Inbox', snippet: text });
     return inboxId;
   },
 
@@ -231,6 +243,7 @@ export const useWorkspace = create<WorkspaceState>((set, get) => ({
     if (workspaceId) {
       const title = activeDoc?.id === id ? activeDoc.title : '';
       void useOrganization.getState().analyzeDoc({ docId: id, workspaceId, title, content });
+      void useTimeline.getState().record({ workspaceId, docId: id, kind: 'edited', title, snippet: extractText(content) });
     }
   },
 
@@ -247,6 +260,7 @@ export const useWorkspace = create<WorkspaceState>((set, get) => ({
   remove: async (id) => {
     await documents.deleteDocument(id);
     useOrganization.getState().forget(id);
+    useTimeline.getState().forget(id);
     await Promise.all([get().refreshTree(), get().loadArchived()]);
     if (!nodeExists(get().tree, get().activeId)) {
       const next = get().tree[0];

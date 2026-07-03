@@ -1,5 +1,10 @@
 import Dexie, { type Table } from 'dexie';
-import type { DocumentRecord, WorkspaceRecord, OrganizationRecord } from './records';
+import type {
+  DocumentRecord,
+  WorkspaceRecord,
+  OrganizationRecord,
+  ActivityRecord,
+} from './records';
 
 /**
  * The local-first store. IndexedDB via Dexie is the Milestone 1 storage engine;
@@ -14,6 +19,7 @@ export class RnoteDatabase extends Dexie {
   documents!: Table<DocumentRecord, string>;
   workspaces!: Table<WorkspaceRecord, string>;
   organizations!: Table<OrganizationRecord, string>;
+  activity!: Table<ActivityRecord, number>;
 
   constructor(name = 'rnote') {
     super(name);
@@ -27,6 +33,11 @@ export class RnoteDatabase extends Dexie {
     this.version(2).stores({
       organizations:
         'docId, workspaceId, intent, contentHash, *categories, *projects, *people, *places, *tags',
+    });
+    // v3 — Time Machine activity feed. Auto-increment id; [workspaceId+at] powers
+    // chronological range queries; docId indexed for coalescing + cleanup.
+    this.version(3).stores({
+      activity: '++id, docId, [workspaceId+at]',
     });
   }
 }

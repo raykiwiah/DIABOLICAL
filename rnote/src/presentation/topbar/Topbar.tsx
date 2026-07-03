@@ -32,6 +32,8 @@ export function Topbar({ onOpenSearch, onToggleSidebar }: TopbarProps): JSX.Elem
           <span className="font-medium text-foreground">Home</span>
         ) : view === 'collection' ? (
           <span className="font-medium text-foreground">{activeCollection?.label ?? 'Collection'}</span>
+        ) : view === 'timeline' ? (
+          <span className="font-medium text-foreground">Time Machine</span>
         ) : activeDoc ? (
           <span className="flex min-w-0 items-center gap-1.5 text-foreground">
             {activeDoc.icon && <span className="shrink-0">{activeDoc.icon}</span>}

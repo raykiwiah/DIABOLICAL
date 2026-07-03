@@ -45,4 +45,19 @@ export interface OrganizationRecord extends DocumentOrganization {
   removed: Record<string, string[]>;
 }
 
+/**
+ * Append-only activity feed powering the Time Machine. Derived from the normal
+ * document lifecycle (no second write path); consecutive edits to one doc are
+ * coalesced by the service so the log stays meaningful.
+ */
+export interface ActivityRecord {
+  id?: number;
+  workspaceId: string;
+  docId: string;
+  at: number;
+  kind: 'created' | 'edited' | 'captured';
+  title: string;
+  snippet: string;
+}
+
 export const ROOT_PARENT = '';
