@@ -5,6 +5,7 @@ import { Sidebar } from '../sidebar/Sidebar';
 import { Topbar } from '../topbar/Topbar';
 import { DocumentEditor } from '../editor/DocumentEditor';
 import { Home } from '../home/Home';
+import { Celebration } from '../gamification/Celebration';
 import { useWorkspace } from '../state/workspace';
 import { useViewMode } from '../state/viewMode';
 import { useHotkey } from '../hooks/useHotkey';
@@ -156,6 +157,8 @@ export function AppShell(): JSX.Element {
       <Suspense fallback={null}>
         {captureOpen && <QuickCapture open onClose={() => setCaptureOpen(false)} />}
       </Suspense>
+
+      <Celebration />
     </div>
   );
 }

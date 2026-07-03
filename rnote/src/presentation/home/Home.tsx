@@ -18,6 +18,7 @@ import { usePreferences } from '../state/preferences';
 import { cn } from '../lib/cn';
 import { emit, OPEN_TEMPLATES_EVENT, OPEN_SEARCH_EVENT } from '../lib/events';
 import { modLabel } from '../lib/platform';
+import { StatsCard } from '../gamification/StatsCard';
 import { BackupNudge } from './BackupNudge';
 
 /** The "Today" home dashboard — the default landing surface. */
@@ -135,6 +136,9 @@ export function Home(): JSX.Element {
             onClick={() => emit(OPEN_SEARCH_EVENT)}
           />
         </div>
+
+        {/* Progress (gamified in Gen Z, minimal in Millennial) */}
+        <StatsCard />
 
         {/* Recent */}
         <section className="mt-10">

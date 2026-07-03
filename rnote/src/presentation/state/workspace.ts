@@ -4,6 +4,7 @@ import type { DocumentDetail, DocumentSummary, DocumentTreeNode } from '@applica
 import type { WorkspaceBackup } from '@application/documents/backup';
 import type { SearchHit } from '@application/ports/SearchIndex';
 import { container } from '@/composition/container';
+import { useGameStats } from './gameStats';
 import { WELCOME_DOC } from './welcome';
 import {
   TEMPLATES,
@@ -86,6 +87,9 @@ export const useWorkspace = create<WorkspaceState>((set, get) => ({
 
     // Land on the Home dashboard rather than auto-opening a page.
     set({ tree, status: 'ready', view: 'home' });
+
+    // Count today's visit toward the daily streak.
+    useGameStats.getState().checkIn();
   },
 
   refreshTree: async () => {
@@ -116,6 +120,7 @@ export const useWorkspace = create<WorkspaceState>((set, get) => ({
     await get().refreshTree();
     if (parentId) set({ expanded: { ...get().expanded, [parentId]: true } });
     await get().open(created.value.id);
+    useGameStats.getState().recordAction('page');
     return created.value.id;
   },
 
@@ -127,6 +132,7 @@ export const useWorkspace = create<WorkspaceState>((set, get) => ({
     if (!created.ok) return;
     await get().refreshTree();
     await get().open(created.value.id);
+    useGameStats.getState().recordAction('template');
   },
 
   quickCapture: async (rawText) => {
@@ -154,6 +160,7 @@ export const useWorkspace = create<WorkspaceState>((set, get) => ({
     await documents.updateContent(inboxId, appendCapture(detail.content, text));
     await get().refreshTree();
     if (get().activeId === inboxId) await get().open(inboxId);
+    useGameStats.getState().recordAction('capture');
     return inboxId;
   },
 

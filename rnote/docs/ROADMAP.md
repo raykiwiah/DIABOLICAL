@@ -20,7 +20,7 @@ Zero lock-in ◐ (JSON+MD export ✅, more import ▷) · Extensible ▷ (plugin
 
 ### Modes
 Gen Z / Millennial selection ✅ · switch later ✅ · presentation-only ✅ ·
-Gen Z: gradients ✅, motion ◐, gamification ▷, XP/streaks/achievements ▷,
+Gen Z: gradients ✅, motion ✅, gamification ✅, XP/streaks/achievements ✅,
 anime themes ▷, AI companion ▷, widget homepage ▷, theme studio ▷, cursor fx ▷,
 music ▷, Discord RPC ⛔(desktop)
 
@@ -77,9 +77,12 @@ Theme studio ▷ · Widget studio ▷ · Marketplace ▷ · PWA installable ✅
       typography), both from the topbar and ⌘K. (Also shipped here: offline
       service worker (PWA), mobile drawer sidebar, inline link editor, correct
       platform shortcut labels, bare-domain link normalization.)
-- [ ] **I5 · Gamification (Gen Z).** XP, levels, streaks, achievements, a stats
-      store persisted locally; celebratory motion. Presentation-only in
-      Millennial (hidden/minimal).
+- [x] **I5 · Gamification (Gen Z).** ✅ Local, persisted stats store (XP, levels
+      on a triangular curve, daily streak, 6 achievements) with pure, unit-tested
+      leveling logic. XP accrues from pages, captures, templates and daily
+      check-ins. Gen Z: animated Home progress card (level ring, gradient XP bar,
+      streak flame, badge shelf) + celebratory level-up/achievement toast.
+      Millennial: identical numbers as one calm line, no motion (presentation-only).
 - [ ] **I6 · Databases v1 — Table view.** A "collection" page type with typed
       properties (text/number/select/date/checkbox), add/edit rows, sort/filter.
 - [ ] **I7 · Databases v2 — Board / Gallery / Calendar views** over the same
