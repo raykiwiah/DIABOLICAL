@@ -12,15 +12,19 @@ import {
   Upload,
   FileDown,
   LayoutTemplate,
+  Maximize2,
+  BookOpen,
   Zap,
 } from 'lucide-react';
 import type { DocumentTreeNode } from '@application/dto';
 import { isWorkspaceBackup } from '@application/documents/backup';
 import { useWorkspace } from '../state/workspace';
+import { useViewMode } from '../state/viewMode';
 import { usePreferences } from '../state/preferences';
 import { Kbd } from '../components/Kbd';
 import { cn } from '../lib/cn';
 import { downloadFile, pickTextFile, slugify } from '../lib/files';
+import { modLabel } from '../lib/platform';
 import { richDocToMarkdown } from '../lib/markdown';
 import { emit, OPEN_TEMPLATES_EVENT, OPEN_CAPTURE_EVENT } from '../lib/events';
 import { markBackedUp } from '../lib/backupState';
@@ -53,6 +57,10 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps): JSX.Elem
   const theme = usePreferences((s) => s.theme);
   const toggleTheme = usePreferences((s) => s.toggleTheme);
   const setMode = usePreferences((s) => s.setMode);
+  const reading = useViewMode((s) => s.reading);
+  const focus = useViewMode((s) => s.focus);
+  const toggleFocus = useViewMode((s) => s.toggleFocus);
+  const toggleReading = useViewMode((s) => s.toggleReading);
 
   useEffect(() => {
     if (open) {
@@ -100,6 +108,22 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps): JSX.Elem
         icon: <Sparkles size={16} />,
         title: mode === 'genz' ? 'Switch to Millennial mode' : 'Switch to Gen Z mode',
         run: () => setMode(mode === 'genz' ? 'millennial' : 'genz'),
+      },
+      {
+        key: 'toggle-focus',
+        group: 'Actions',
+        icon: <Maximize2 size={16} />,
+        title: focus ? 'Exit focus mode' : 'Enter focus mode',
+        subtitle: `Immersive writing · ${modLabel('.')}`,
+        run: toggleFocus,
+      },
+      {
+        key: 'toggle-reading',
+        group: 'Actions',
+        icon: <BookOpen size={16} />,
+        title: reading ? 'Exit reading mode' : 'Enter reading mode',
+        subtitle: 'Distraction-free, read-only',
+        run: toggleReading,
       },
       {
         key: 'export-backup',
@@ -170,7 +194,21 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps): JSX.Elem
           }));
 
     return q ? [...pages, ...actions] : [...actions, ...pages];
-  }, [query, tree, mode, theme, search, createDocument, openDoc, setMode, toggleTheme]);
+  }, [
+    query,
+    tree,
+    mode,
+    theme,
+    focus,
+    reading,
+    search,
+    createDocument,
+    openDoc,
+    setMode,
+    toggleTheme,
+    toggleFocus,
+    toggleReading,
+  ]);
 
   useEffect(() => {
     setIndex(0);

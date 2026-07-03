@@ -169,6 +169,12 @@ export function Editor({ initialContent, onChange, editable = true }: EditorProp
     editorRef.current = editor;
   }, [editor]);
 
+  // Reflect prop-driven editability onto the live instance — Tiptap only reads
+  // `editable` at creation, so Reading mode needs an explicit setEditable.
+  useEffect(() => {
+    editor?.setEditable(editable);
+  }, [editor, editable]);
+
   const startLinkEdit = (): void => {
     const previous = editor?.getAttributes('link').href as string | undefined;
     setLinkValue(previous ?? 'https://');

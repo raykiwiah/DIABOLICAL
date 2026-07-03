@@ -4,7 +4,9 @@ import type { RichDoc } from '@domain/blocks';
 import { countWords } from '@domain/blocks';
 import type { DocumentDetail } from '@application/dto';
 import { useWorkspace } from '../state/workspace';
+import { useViewMode } from '../state/viewMode';
 import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
+import { cn } from '../lib/cn';
 import { Editor } from './Editor';
 import { IconPicker } from './IconPicker';
 
@@ -22,6 +24,7 @@ function DocumentEditorInner({ doc }: { doc: DocumentDetail }): JSX.Element {
   const saveContent = useWorkspace((s) => s.saveContent);
   const setIcon = useWorkspace((s) => s.setIcon);
   const saving = useWorkspace((s) => s.saving);
+  const reading = useViewMode((s) => s.reading);
 
   const [title, setTitle] = useState(doc.title);
   const [wordCount, setWordCount] = useState(doc.wordCount);
@@ -49,7 +52,7 @@ function DocumentEditorInner({ doc }: { doc: DocumentDetail }): JSX.Element {
   };
 
   return (
-    <div className="flex h-full flex-col overflow-y-auto">
+    <div className={cn('flex h-full flex-col overflow-y-auto', reading && 'rn-reading')}>
       <div className="mx-auto w-full max-w-[760px] flex-1 px-6 pb-40 pt-14 sm:px-10">
         <IconPicker value={doc.icon} onChange={(icon) => setIcon(doc.id, icon)} />
 
@@ -68,12 +71,13 @@ function DocumentEditorInner({ doc }: { doc: DocumentDetail }): JSX.Element {
           rows={1}
           placeholder="Untitled"
           spellCheck={false}
+          readOnly={reading}
           aria-label="Page title"
-          className="mt-2 w-full resize-none border-none bg-transparent font-display text-[2.4rem] font-bold leading-tight tracking-tight text-foreground outline-none placeholder:text-subtle"
+          className="rn-page-title mt-2 w-full resize-none border-none bg-transparent font-display text-[2.4rem] font-bold leading-tight tracking-tight text-foreground outline-none placeholder:text-subtle"
         />
 
         <div className="mt-2">
-          <Editor initialContent={doc.content} onChange={handleContentChange} />
+          <Editor initialContent={doc.content} onChange={handleContentChange} editable={!reading} />
         </div>
       </div>
 

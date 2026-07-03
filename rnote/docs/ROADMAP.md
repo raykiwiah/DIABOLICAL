@@ -40,12 +40,12 @@ Finance/Expense/Budget/Subscription/Loan ▷ · Health/Fitness ▷ · Goals ▷ 
 Travel planner ▷ · Recipe manager ▷ · Reading/Movie trackers ▷ · Project mgmt ▷
 
 ### Productivity surfaces
-Quick capture ▷ · Focus mode ▷ · Reading mode ▷ · Study mode ▷ · Flashcards ▷ ·
-Adaptive dashboard / widget homepage ▷ · Templates ▷
+Quick capture ✅ · Focus mode ✅ · Reading mode ✅ · Study mode ▷ · Flashcards ▷ ·
+Adaptive dashboard / widget homepage ▷ · Templates ✅
 
 ### Search / data / shortcuts
-Local + global search ✅ (⌘K) · Keyboard shortcuts ◐ · Export ✅ · Import ◐ ·
-Version history ▷
+Local + global search ✅ (⌘K) · Keyboard shortcuts ◐ (⌘K/⌘\/⌘., platform-correct
+labels) · Export ✅ · Import ◐ · Version history ▷
 
 ### AI (bring-your-own)
 AI assistant ▷ · AI chat with notes ▷ · Adaptive AI ▷ · AI companion ▷ ·
@@ -70,11 +70,13 @@ Theme studio ▷ · Widget studio ▷ · Marketplace ▷ · PWA installable ✅
       content; create-with-content use case; opened from Home + ⌘K.
 - [◐] **I3 · Block expansion.** ✅ Image block (inline data-URL, offline-safe,
       exports to Markdown). ▷ Remaining: columns, bookmark (URL card), table.
-- [◐] **I4 · Quick capture + Focus/Reading mode.** ✅ Global quick-capture
+- [x] **I4 · Quick capture + Focus/Reading mode.** ✅ Global quick-capture
       (floating button + ⌘K) appends to an Inbox without navigating; ✅ "Today's
-      note" one-click daily note; ✅ backup nudge. ▷ Remaining: focus mode,
-      reading mode. (Also shipped here: offline service worker (PWA), mobile
-      drawer sidebar, inline link editor.)
+      note" one-click daily note; ✅ backup nudge; ✅ Focus mode (⌘. — hides all
+      chrome for immersive writing) and ✅ Reading mode (read-only, relaxed
+      typography), both from the topbar and ⌘K. (Also shipped here: offline
+      service worker (PWA), mobile drawer sidebar, inline link editor, correct
+      platform shortcut labels, bare-domain link normalization.)
 - [ ] **I5 · Gamification (Gen Z).** XP, levels, streaks, achievements, a stats
       store persisted locally; celebratory motion. Presentation-only in
       Millennial (hidden/minimal).

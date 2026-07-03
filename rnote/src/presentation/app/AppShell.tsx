@@ -1,12 +1,14 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Zap } from 'lucide-react';
+import { Zap, Minimize2, BookOpen } from 'lucide-react';
 import { Sidebar } from '../sidebar/Sidebar';
 import { Topbar } from '../topbar/Topbar';
 import { DocumentEditor } from '../editor/DocumentEditor';
 import { Home } from '../home/Home';
 import { useWorkspace } from '../state/workspace';
+import { useViewMode } from '../state/viewMode';
 import { useHotkey } from '../hooks/useHotkey';
+import { IconButton } from '../components/IconButton';
 import { emit, OPEN_TEMPLATES_EVENT, OPEN_CAPTURE_EVENT, OPEN_SEARCH_EVENT } from '../lib/events';
 
 // Loaded on demand.
@@ -28,9 +30,25 @@ export function AppShell(): JSX.Element {
   const [captureOpen, setCaptureOpen] = useState(false);
   const view = useWorkspace((s) => s.view);
   const activeId = useWorkspace((s) => s.activeId);
+  const focus = useViewMode((s) => s.focus);
+  const reading = useViewMode((s) => s.reading);
+  const toggleFocus = useViewMode((s) => s.toggleFocus);
+  const toggleReading = useViewMode((s) => s.toggleReading);
+  const exitViewMode = useViewMode((s) => s.exit);
+
+  // Immersive writing hides all chrome; only applies on a document surface.
+  const immersive = focus && view === 'document';
 
   useHotkey('k', () => setPaletteOpen((o) => !o), { meta: true, allowInEditable: true });
   useHotkey('\\', () => setSidebarOpen((o) => !o), { meta: true, allowInEditable: true });
+  useHotkey('.', () => toggleFocus(), { meta: true, allowInEditable: true });
+  useHotkey(
+    'Escape',
+    () => {
+      if (focus && !paletteOpen && !templatesOpen && !captureOpen) exitViewMode();
+    },
+    { allowInEditable: true },
+  );
 
   // Cross-surface open events for the template gallery, quick capture, and search.
   useEffect(() => {
@@ -55,7 +73,7 @@ export function AppShell(): JSX.Element {
   return (
     <div className="relative flex h-screen w-screen overflow-hidden bg-background text-foreground">
       <AnimatePresence>
-        {sidebarOpen && (
+        {!immersive && sidebarOpen && (
           <>
             {/* Scrim — mobile only */}
             <motion.div
@@ -82,22 +100,50 @@ export function AppShell(): JSX.Element {
       </AnimatePresence>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar
-          onOpenSearch={() => setPaletteOpen(true)}
-          onToggleSidebar={() => setSidebarOpen((o) => !o)}
-        />
+        {!immersive && (
+          <Topbar
+            onOpenSearch={() => setPaletteOpen(true)}
+            onToggleSidebar={() => setSidebarOpen((o) => !o)}
+          />
+        )}
         <main className="min-h-0 flex-1">{view === 'home' ? <Home /> : <DocumentEditor />}</main>
       </div>
 
-      {/* Floating quick-capture button */}
-      <button
-        type="button"
-        aria-label="Quick capture"
-        onClick={() => emit(OPEN_CAPTURE_EVENT)}
-        className="fixed bottom-5 right-5 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:brightness-110 active:scale-95"
-      >
-        <Zap size={20} />
-      </button>
+      {/* Immersive-mode controls: a calm, always-reachable exit + reading toggle. */}
+      <AnimatePresence>
+        {immersive && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            className="rn-panel fixed right-4 top-4 z-30 flex items-center gap-0.5 p-1 shadow-sm"
+          >
+            <IconButton
+              label={reading ? 'Exit reading mode' : 'Reading mode'}
+              size="sm"
+              onClick={() => toggleReading()}
+              className={reading ? 'text-primary' : undefined}
+            >
+              <BookOpen size={16} />
+            </IconButton>
+            <IconButton label="Exit focus mode" size="sm" onClick={() => exitViewMode()}>
+              <Minimize2 size={16} />
+            </IconButton>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Floating quick-capture button (hidden while writing in focus mode) */}
+      {!immersive && (
+        <button
+          type="button"
+          aria-label="Quick capture"
+          onClick={() => emit(OPEN_CAPTURE_EVENT)}
+          className="fixed bottom-5 right-5 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:brightness-110 active:scale-95"
+        >
+          <Zap size={20} />
+        </button>
+      )}
 
       <Suspense fallback={null}>
         <AnimatePresence>

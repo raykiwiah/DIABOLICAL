@@ -87,6 +87,18 @@
   min-height: 40vh;
 }
 
+/* Reading mode — relaxed typography for comfortable, distraction-free reading. */
+.rn-reading .rn-editor .ProseMirror {
+  font-size: 18px;
+  line-height: 1.9;
+}
+.rn-reading .rn-editor .ProseMirror p {
+  padding: 5px 0;
+}
+.rn-reading .rn-page-title {
+  font-size: 2.7rem;
+}
+
 .rn-editor .ProseMirror > * + * {
   margin-top: 2px;
 }
