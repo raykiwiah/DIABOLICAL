@@ -1,13 +1,38 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
 import { fileURLToPath, URL } from 'node:url';
 
 // RNOTE runs as a pure client-side, local-first app (see docs/adr/0001-vite-over-nextjs.md).
 // Vite is the canonical bundler for a Tauri desktop shell and gives us instant HMR
 // with zero server runtime — exactly what an offline-first product needs.
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    // Offline app-shell caching. autoUpdate + skipWaiting + cleanupOutdatedCaches
+    // means a new deploy always supersedes the cache — users can't get stranded
+    // on a stale build. Uses the existing public/manifest.webmanifest.
+    VitePWA({
+      registerType: 'autoUpdate',
+      injectRegister: 'auto',
+      manifest: false,
+      includeAssets: [
+        'favicon.svg',
+        'apple-touch-icon.png',
+        'pwa-192x192.png',
+        'pwa-512x512.png',
+        'pwa-maskable-512x512.png',
+      ],
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest,woff2}'],
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        skipWaiting: true,
+      },
+      devOptions: { enabled: false },
+    }),
+  ],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

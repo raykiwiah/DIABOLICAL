@@ -1,5 +1,5 @@
 import { useState, lazy, Suspense } from 'react';
-import { Search, Plus, Sparkles, Trash2, Home as HomeIcon } from 'lucide-react';
+import { Search, Plus, Sparkles, Trash2, Home as HomeIcon, CalendarDays } from 'lucide-react';
 import { useWorkspace } from '../state/workspace';
 import { usePreferences } from '../state/preferences';
 import { DocTreeItem } from './DocTreeItem';
@@ -20,6 +20,7 @@ export function Sidebar({ onOpenSearch }: SidebarProps): JSX.Element {
   const tree = useWorkspace((s) => s.tree);
   const createDocument = useWorkspace((s) => s.createDocument);
   const showHome = useWorkspace((s) => s.showHome);
+  const openToday = useWorkspace((s) => s.openToday);
   const view = useWorkspace((s) => s.view);
   const mode = usePreferences((s) => s.mode);
   const [trashOpen, setTrashOpen] = useState(false);
@@ -52,6 +53,14 @@ export function Sidebar({ onOpenSearch }: SidebarProps): JSX.Element {
         >
           <HomeIcon size={15} />
           <span className="flex-1 text-left">Home</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => void openToday()}
+          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-surface-hover"
+        >
+          <CalendarDays size={15} />
+          <span className="flex-1 text-left">Today</span>
         </button>
         <button
           type="button"

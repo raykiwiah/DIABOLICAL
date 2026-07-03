@@ -1,21 +1,34 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, ArrowRight, FileText, Sparkles, Clock, LayoutTemplate, Zap } from 'lucide-react';
+import {
+  Plus,
+  ArrowRight,
+  FileText,
+  Sparkles,
+  Clock,
+  LayoutTemplate,
+  CalendarDays,
+  Check,
+  Zap,
+} from 'lucide-react';
 import type { DocumentTreeNode } from '@application/dto';
 import { useWorkspace } from '../state/workspace';
 import { usePreferences } from '../state/preferences';
 import { cn } from '../lib/cn';
 import { emit, OPEN_TEMPLATES_EVENT } from '../lib/events';
+import { BackupNudge } from './BackupNudge';
 
 /** The "Today" home dashboard — the default landing surface. */
 export function Home(): JSX.Element {
   const tree = useWorkspace((s) => s.tree);
   const createDocument = useWorkspace((s) => s.createDocument);
-  const rename = useWorkspace((s) => s.rename);
+  const quickCapture = useWorkspace((s) => s.quickCapture);
+  const openToday = useWorkspace((s) => s.openToday);
   const open = useWorkspace((s) => s.open);
   const mode = usePreferences((s) => s.mode);
 
   const [capture, setCapture] = useState('');
+  const [captured, setCaptured] = useState(false);
 
   const flat = useMemo(() => flatten(tree), [tree]);
   const recent = useMemo(
@@ -24,10 +37,12 @@ export function Home(): JSX.Element {
   );
 
   const submitCapture = async (): Promise<void> => {
-    const title = capture.trim();
+    const text = capture.trim();
+    if (!text) return;
     setCapture('');
-    const id = await createDocument(null);
-    if (id && title) await rename(id, title);
+    await quickCapture(text);
+    setCaptured(true);
+    setTimeout(() => setCaptured(false), 1600);
   };
 
   const now = new Date();
@@ -48,6 +63,8 @@ export function Home(): JSX.Element {
             {mode === 'genz' && <Sparkles size={22} className="text-accent" />}
           </h1>
         </motion.header>
+
+        <BackupNudge />
 
         {/* Quick capture */}
         <motion.div
@@ -74,6 +91,11 @@ export function Home(): JSX.Element {
             Capture <ArrowRight size={15} />
           </button>
         </motion.div>
+        {captured && (
+          <p className="mt-2 flex items-center gap-1.5 text-xs text-success">
+            <Check size={13} /> Added to your Inbox
+          </p>
+        )}
 
         {/* Quick actions */}
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -90,10 +112,10 @@ export function Home(): JSX.Element {
             onClick={() => emit(OPEN_TEMPLATES_EVENT)}
           />
           <ActionCard
-            icon={<Sparkles size={18} />}
-            title="Search"
-            subtitle="Press ⌘K"
-            onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
+            icon={<CalendarDays size={18} />}
+            title="Today's note"
+            subtitle="Plan and reflect"
+            onClick={() => void openToday()}
           />
         </div>
 

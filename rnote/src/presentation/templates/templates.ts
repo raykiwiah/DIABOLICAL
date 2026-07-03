@@ -41,6 +41,13 @@ const today = (): string =>
     day: 'numeric',
   });
 
+/** The canonical title of today's daily note (shared with the "Today" action). */
+export function todayNoteTitle(): string {
+  return today();
+}
+
+export const DAILY_TEMPLATE_ID = 'daily';
+
 export const TEMPLATES: PageTemplate[] = [
   {
     id: 'blank',

@@ -70,8 +70,11 @@ Theme studio ▷ · Widget studio ▷ · Marketplace ▷ · PWA installable ✅
       content; create-with-content use case; opened from Home + ⌘K.
 - [◐] **I3 · Block expansion.** ✅ Image block (inline data-URL, offline-safe,
       exports to Markdown). ▷ Remaining: columns, bookmark (URL card), table.
-- [ ] **I4 · Quick capture + Focus mode + Reading mode.** Global quick-capture
-      (⌘⇧N) to an inbox; distraction-free focus toggle; read-only reading view.
+- [◐] **I4 · Quick capture + Focus/Reading mode.** ✅ Global quick-capture
+      (floating button + ⌘K) appends to an Inbox without navigating; ✅ "Today's
+      note" one-click daily note; ✅ backup nudge. ▷ Remaining: focus mode,
+      reading mode. (Also shipped here: offline service worker (PWA), mobile
+      drawer sidebar, inline link editor.)
 - [ ] **I5 · Gamification (Gen Z).** XP, levels, streaks, achievements, a stats
       store persisted locally; celebratory motion. Presentation-only in
       Millennial (hidden/minimal).

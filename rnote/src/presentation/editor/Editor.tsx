@@ -10,7 +10,7 @@ import Details from '@tiptap/extension-details';
 import DetailsSummary from '@tiptap/extension-details-summary';
 import DetailsContent from '@tiptap/extension-details-content';
 import { AnimatePresence } from 'framer-motion';
-import { Bold, Italic, Strikethrough, Code, Link as LinkIcon } from 'lucide-react';
+import { Bold, Italic, Strikethrough, Code, Link as LinkIcon, Unlink } from 'lucide-react';
 import type { RichDoc } from '@domain/blocks';
 import { SLASH_COMMANDS, filterCommands, type SlashCommand } from './commands';
 import { SlashMenu } from './SlashMenu';
@@ -57,6 +57,16 @@ export function Editor({ initialContent, onChange, editable = true }: EditorProp
   useEffect(() => {
     slashRef.current = slash;
   }, [slash]);
+
+  // Inline link editor (shown inside the bubble menu, replacing window.prompt).
+  const [linkEditing, setLinkEditing] = useState(false);
+  const [linkValue, setLinkValue] = useState('');
+  const linkEditingRef = useRef(false);
+  const linkInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    linkEditingRef.current = linkEditing;
+    if (linkEditing) requestAnimationFrame(() => linkInputRef.current?.select());
+  }, [linkEditing]);
 
   const refreshSlash = useCallback((editor: TiptapEditor) => {
     const { selection } = editor.state;
@@ -159,6 +169,24 @@ export function Editor({ initialContent, onChange, editable = true }: EditorProp
     editorRef.current = editor;
   }, [editor]);
 
+  const startLinkEdit = (): void => {
+    const previous = editor?.getAttributes('link').href as string | undefined;
+    setLinkValue(previous ?? 'https://');
+    setLinkEditing(true);
+  };
+  const applyLink = (): void => {
+    if (!editor) return;
+    const url = linkValue.trim();
+    const chain = editor.chain().focus().extendMarkRange('link');
+    if (url === '' || url === 'https://') chain.unsetLink().run();
+    else chain.setLink({ href: url }).run();
+    setLinkEditing(false);
+  };
+  const removeLink = (): void => {
+    editor?.chain().focus().extendMarkRange('link').unsetLink().run();
+    setLinkEditing(false);
+  };
+
   return (
     <div className="rn-editor relative">
       {editor && (
@@ -166,25 +194,73 @@ export function Editor({ initialContent, onChange, editable = true }: EditorProp
           editor={editor}
           // zIndex 40 keeps the toolbar above the editor but below the slash
           // menu (50) and modals/command palette (60) so overlays always win.
-          tippyOptions={{ duration: 120, zIndex: 40 }}
-          shouldShow={({ editor: e, from, to }) => from !== to && e.isFocused && !e.isActive('codeBlock')}
-          className="rn-panel flex items-center gap-0.5 p-1"
+          tippyOptions={{ duration: 120, zIndex: 40, onHidden: () => setLinkEditing(false) }}
+          shouldShow={({ editor: e, from, to }) =>
+            from !== to && !e.isActive('codeBlock') && (e.isFocused || linkEditingRef.current)
+          }
+          className="rn-panel flex items-center gap-1 p-1"
         >
-          <MarkButton label="Bold" active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()}>
-            <Bold size={15} />
-          </MarkButton>
-          <MarkButton label="Italic" active={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()}>
-            <Italic size={15} />
-          </MarkButton>
-          <MarkButton label="Strikethrough" active={editor.isActive('strike')} onClick={() => editor.chain().focus().toggleStrike().run()}>
-            <Strikethrough size={15} />
-          </MarkButton>
-          <MarkButton label="Inline code" active={editor.isActive('code')} onClick={() => editor.chain().focus().toggleCode().run()}>
-            <Code size={15} />
-          </MarkButton>
-          <MarkButton label="Link" active={editor.isActive('link')} onClick={() => promptLink(editor)}>
-            <LinkIcon size={15} />
-          </MarkButton>
+          {linkEditing ? (
+            <div className="flex items-center gap-1">
+              <input
+                ref={linkInputRef}
+                value={linkValue}
+                onChange={(e) => setLinkValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    applyLink();
+                  } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    setLinkEditing(false);
+                  }
+                }}
+                placeholder="Paste or type a link…"
+                className="h-8 w-56 rounded-md bg-surface px-2 text-sm text-foreground outline-none ring-1 ring-border focus:ring-primary"
+              />
+              <button
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  applyLink();
+                }}
+                className="h-8 rounded-md bg-primary px-2.5 text-xs font-medium text-primary-foreground hover:brightness-110"
+              >
+                Apply
+              </button>
+              {editor.isActive('link') && (
+                <button
+                  type="button"
+                  aria-label="Remove link"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    removeLink();
+                  }}
+                  className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-surface-hover hover:text-danger"
+                >
+                  <Unlink size={14} />
+                </button>
+              )}
+            </div>
+          ) : (
+            <>
+              <MarkButton label="Bold" active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()}>
+                <Bold size={15} />
+              </MarkButton>
+              <MarkButton label="Italic" active={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()}>
+                <Italic size={15} />
+              </MarkButton>
+              <MarkButton label="Strikethrough" active={editor.isActive('strike')} onClick={() => editor.chain().focus().toggleStrike().run()}>
+                <Strikethrough size={15} />
+              </MarkButton>
+              <MarkButton label="Inline code" active={editor.isActive('code')} onClick={() => editor.chain().focus().toggleCode().run()}>
+                <Code size={15} />
+              </MarkButton>
+              <MarkButton label="Link" active={editor.isActive('link')} onClick={startLinkEdit}>
+                <LinkIcon size={15} />
+              </MarkButton>
+            </>
+          )}
         </BubbleMenu>
       )}
 
@@ -235,15 +311,3 @@ function MarkButton({
   );
 }
 
-/** Prompt for a URL and apply/remove a link over the current selection. */
-function promptLink(editor: TiptapEditor): void {
-  const previous = editor.getAttributes('link').href as string | undefined;
-  const url = window.prompt('Link URL', previous ?? 'https://');
-  if (url === null) return; // cancelled
-  const trimmed = url.trim();
-  if (trimmed === '') {
-    editor.chain().focus().extendMarkRange('link').unsetLink().run();
-    return;
-  }
-  editor.chain().focus().extendMarkRange('link').setLink({ href: trimmed }).run();
-}

@@ -1,11 +1,16 @@
 import { create } from 'zustand';
-import type { RichDoc } from '@domain/blocks';
+import type { RichDoc, RichNode } from '@domain/blocks';
 import type { DocumentDetail, DocumentSummary, DocumentTreeNode } from '@application/dto';
 import type { WorkspaceBackup } from '@application/documents/backup';
 import type { SearchHit } from '@application/ports/SearchIndex';
 import { container } from '@/composition/container';
 import { WELCOME_DOC } from './welcome';
-import type { PageTemplate } from '../templates/templates';
+import {
+  TEMPLATES,
+  todayNoteTitle,
+  DAILY_TEMPLATE_ID,
+  type PageTemplate,
+} from '../templates/templates';
 
 interface WorkspaceState {
   status: 'idle' | 'loading' | 'ready';
@@ -25,6 +30,8 @@ interface WorkspaceState {
   showHome: () => void;
   createDocument: (parentId?: string | null) => Promise<string | null>;
   createFromTemplate: (template: PageTemplate) => Promise<void>;
+  quickCapture: (text: string) => Promise<void>;
+  openToday: () => Promise<void>;
   rename: (id: string, title: string) => Promise<void>;
   setIcon: (id: string, icon: string) => Promise<void>;
   saveContent: (id: string, content: RichDoc) => Promise<void>;
@@ -119,6 +126,47 @@ export const useWorkspace = create<WorkspaceState>((set, get) => ({
     if (!created.ok) return;
     await get().refreshTree();
     await get().open(created.value.id);
+  },
+
+  quickCapture: async (rawText) => {
+    const text = rawText.trim();
+    const { workspaceId } = get();
+    if (!text || !workspaceId) return;
+
+    // Append to a single "Inbox" page (created on first capture) without
+    // navigating away — the essence of frictionless capture.
+    const summaries = await documents.listSummaries(workspaceId);
+    let inboxId = summaries.find((s) => s.title === 'Inbox')?.id;
+    if (!inboxId) {
+      const created = await documents.createDocument({
+        workspaceId,
+        title: 'Inbox',
+        icon: '📥',
+        content: emptyInbox(),
+      });
+      if (!created.ok) return;
+      inboxId = created.value.id;
+    }
+
+    const detail = await documents.getDocument(inboxId);
+    if (!detail) return;
+    await documents.updateContent(inboxId, appendCapture(detail.content, text));
+    await get().refreshTree();
+    if (get().activeId === inboxId) await get().open(inboxId);
+  },
+
+  openToday: async () => {
+    const { workspaceId } = get();
+    if (!workspaceId) return;
+    const title = todayNoteTitle();
+    const summaries = await documents.listSummaries(workspaceId);
+    const existing = summaries.find((s) => s.title === title);
+    if (existing) {
+      await get().open(existing.id);
+      return;
+    }
+    const daily = TEMPLATES.find((t) => t.id === DAILY_TEMPLATE_ID);
+    if (daily) await get().createFromTemplate(daily);
   },
 
   rename: async (id, title) => {
@@ -218,6 +266,35 @@ export const useWorkspace = create<WorkspaceState>((set, get) => ({
     return documents.searchDocuments(workspaceId, query);
   },
 }));
+
+// ── Quick-capture helpers (pure) ─────────────────────────────────────────────
+function emptyInbox(): RichDoc {
+  return {
+    type: 'doc',
+    content: [
+      { type: 'heading', attrs: { level: 1 }, content: [{ type: 'text', text: 'Inbox' }] },
+      { type: 'taskList', content: [] },
+    ],
+  };
+}
+
+/** Append a captured line as a new unchecked task to the doc's task list. */
+function appendCapture(doc: RichDoc, text: string): RichDoc {
+  const item: RichNode = {
+    type: 'taskItem',
+    attrs: { checked: false },
+    content: [{ type: 'paragraph', content: [{ type: 'text', text }] }],
+  };
+  const content: RichNode[] = [...(doc.content ?? [])];
+  const index = content.findIndex((n) => n.type === 'taskList');
+  const list = index >= 0 ? content[index] : undefined;
+  if (list) {
+    content[index] = { ...list, content: [...(list.content ?? []), item] };
+  } else {
+    content.push({ type: 'taskList', content: [item] });
+  }
+  return { type: 'doc', content };
+}
 
 // ── Tree helpers (pure) ──────────────────────────────────────────────────────
 function patchTree(

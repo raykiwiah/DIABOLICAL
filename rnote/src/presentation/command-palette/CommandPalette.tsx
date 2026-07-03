@@ -12,6 +12,7 @@ import {
   Upload,
   FileDown,
   LayoutTemplate,
+  Zap,
 } from 'lucide-react';
 import type { DocumentTreeNode } from '@application/dto';
 import { isWorkspaceBackup } from '@application/documents/backup';
@@ -21,7 +22,8 @@ import { Kbd } from '../components/Kbd';
 import { cn } from '../lib/cn';
 import { downloadFile, pickTextFile, slugify } from '../lib/files';
 import { richDocToMarkdown } from '../lib/markdown';
-import { emit, OPEN_TEMPLATES_EVENT } from '../lib/events';
+import { emit, OPEN_TEMPLATES_EVENT, OPEN_CAPTURE_EVENT } from '../lib/events';
+import { markBackedUp } from '../lib/backupState';
 
 interface CommandPaletteProps {
   open: boolean;
@@ -79,6 +81,13 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps): JSX.Elem
         run: () => emit(OPEN_TEMPLATES_EVENT),
       },
       {
+        key: 'quick-capture',
+        group: 'Actions',
+        icon: <Zap size={16} />,
+        title: 'Quick capture',
+        run: () => emit(OPEN_CAPTURE_EVENT),
+      },
+      {
         key: 'toggle-theme',
         group: 'Actions',
         icon: theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />,
@@ -101,6 +110,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps): JSX.Elem
           const backup = await useWorkspace.getState().buildBackup();
           const stamp = new Date().toISOString().slice(0, 10);
           downloadFile(`rnote-backup-${stamp}.json`, JSON.stringify(backup, null, 2));
+          markBackedUp();
         },
       },
       {
