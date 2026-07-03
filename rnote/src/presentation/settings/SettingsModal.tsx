@@ -1,0 +1,329 @@
+import { useEffect, useState, type ReactNode } from 'react';
+import { motion } from 'framer-motion';
+import {
+  X,
+  Eye,
+  EyeOff,
+  Check,
+  AlertCircle,
+  Loader2,
+  Sparkles,
+  ShieldCheck,
+  Download,
+  Upload,
+} from 'lucide-react';
+import { isWorkspaceBackup } from '@application/documents/backup';
+import type { AiProviderId } from '@application/ports/AiProvider';
+import { getAiProvider } from '@/composition/container';
+import { AI_PROVIDER_IDS, PROVIDER_LABELS, DEFAULT_MODELS } from '@infrastructure/ai/aiConfig';
+import { useAiSettings } from '../state/aiSettings';
+import { useWorkspace } from '../state/workspace';
+import { cn } from '../lib/cn';
+import { downloadFile, pickTextFile } from '../lib/files';
+import { markBackedUp } from '../lib/backupState';
+
+interface SettingsModalProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+type TestState = { status: 'idle' | 'testing' } | { status: 'ok' | 'error'; message: string };
+
+/**
+ * Settings — AI (bring-your-own, off by default), auto-organization, and data.
+ * Works fully with AI disabled; enabling shows explicit consent copy.
+ */
+export function SettingsModal({ open, onClose }: SettingsModalProps): JSX.Element | null {
+  const s = useAiSettings();
+  const buildBackup = useWorkspace((w) => w.buildBackup);
+  const restoreBackup = useWorkspace((w) => w.restoreBackup);
+  const [showKey, setShowKey] = useState(false);
+  const [test, setTest] = useState<TestState>({ status: 'idle' });
+
+  useEffect(() => {
+    if (!open) return;
+    setTest({ status: 'idle' });
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  const runTest = async (): Promise<void> => {
+    setTest({ status: 'testing' });
+    const provider = getAiProvider({ ignoreEnabled: true });
+    if (!provider) {
+      setTest({ status: 'error', message: 'Enter an API key first.' });
+      return;
+    }
+    const res = await provider.complete({
+      messages: [{ role: 'user', content: 'Reply with exactly: OK' }],
+      maxTokens: 5,
+      temperature: 0,
+    });
+    if (res.ok) {
+      setTest({ status: 'ok', message: `Connected — the model replied “${res.value.trim().slice(0, 40)}”.` });
+    } else {
+      setTest({ status: 'error', message: res.error.message });
+    }
+  };
+
+  const exportBackup = async (): Promise<void> => {
+    const backup = await buildBackup();
+    const stamp = new Date().toISOString().slice(0, 10);
+    downloadFile(`rnote-backup-${stamp}.json`, JSON.stringify(backup, null, 2));
+    markBackedUp();
+  };
+
+  const importBackup = async (): Promise<void> => {
+    const text = await pickTextFile('application/json,.json');
+    if (!text) return;
+    try {
+      const parsed: unknown = JSON.parse(text);
+      if (!isWorkspaceBackup(parsed)) {
+        window.alert('That file is not a valid RNOTE backup.');
+        return;
+      }
+      const count = await restoreBackup(parsed);
+      window.alert(`Imported ${count} page${count === 1 ? '' : 's'}.`);
+    } catch {
+      window.alert('Could not read that backup file.');
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-start justify-center px-4 py-[6vh]"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Settings"
+    >
+      <motion.div
+        className="absolute inset-0 bg-overlay/50 backdrop-blur-sm"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        onClick={onClose}
+      />
+      <motion.div
+        initial={{ opacity: 0, y: -8, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+        className="rn-panel relative flex max-h-[88vh] w-full max-w-[560px] flex-col overflow-hidden shadow-lg"
+      >
+        <header className="flex items-center gap-2 border-b border-border px-5 py-3.5">
+          <span className="text-sm font-semibold text-foreground">Settings</span>
+          <button
+            type="button"
+            aria-label="Close settings"
+            onClick={onClose}
+            className="ml-auto flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-surface-hover hover:text-foreground"
+          >
+            <X size={16} />
+          </button>
+        </header>
+
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+          {/* ── AI ─────────────────────────────────────────────── */}
+          <Section
+            icon={<Sparkles size={15} className="text-primary" />}
+            title="AI features"
+            action={<Toggle checked={s.enabled} onChange={s.setEnabled} label="Enable AI features" />}
+          >
+            <p className="flex gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+              <ShieldCheck size={26} className="shrink-0 text-success" />
+              Your note text will be sent to the AI provider you choose, using your own API key.
+              Nothing is sent anywhere until you turn this on. Keys are stored only on this device.
+            </p>
+
+            <Field label="Provider">
+              <select
+                value={s.provider}
+                onChange={(e) => s.setProvider(e.target.value as AiProviderId)}
+                className="h-9 w-full rounded-md border border-border bg-surface px-2 text-sm text-foreground outline-none focus:border-border-strong"
+              >
+                {AI_PROVIDER_IDS.map((id) => (
+                  <option key={id} value={id}>
+                    {PROVIDER_LABELS[id]}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <Field label="Model">
+              <input
+                value={s.model}
+                onChange={(e) => s.setModel(e.target.value)}
+                placeholder={DEFAULT_MODELS[s.provider]}
+                spellCheck={false}
+                className="h-9 w-full rounded-md border border-border bg-surface px-2.5 text-sm text-foreground outline-none focus:border-border-strong"
+              />
+            </Field>
+
+            <Field label="API key">
+              <div className="flex items-center gap-2">
+                <input
+                  type={showKey ? 'text' : 'password'}
+                  value={s.apiKey}
+                  onChange={(e) => s.setApiKey(e.target.value)}
+                  placeholder="Paste your key…"
+                  autoComplete="off"
+                  spellCheck={false}
+                  className="h-9 min-w-0 flex-1 rounded-md border border-border bg-surface px-2.5 font-mono text-sm text-foreground outline-none focus:border-border-strong"
+                />
+                <button
+                  type="button"
+                  aria-label={showKey ? 'Hide API key' : 'Show API key'}
+                  onClick={() => setShowKey((v) => !v)}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-surface-hover"
+                >
+                  {showKey ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
+              </div>
+            </Field>
+
+            <div className="mt-1 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => void runTest()}
+                disabled={test.status === 'testing' || !s.apiKey}
+                className="flex h-9 items-center gap-2 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground transition hover:brightness-110 disabled:opacity-40"
+              >
+                {test.status === 'testing' && <Loader2 size={14} className="animate-spin" />}
+                Test connection
+              </button>
+              {(test.status === 'ok' || test.status === 'error') && (
+                <span
+                  className={cn(
+                    'flex items-center gap-1.5 text-xs',
+                    test.status === 'ok' ? 'text-success' : 'text-danger',
+                  )}
+                >
+                  {test.status === 'ok' ? <Check size={13} /> : <AlertCircle size={13} />}
+                  {test.message}
+                </span>
+              )}
+            </div>
+          </Section>
+
+          {/* ── Auto-organization ──────────────────────────────── */}
+          <Section
+            title="Auto-organization"
+            action={
+              <Toggle
+                checked={s.autoOrganize}
+                onChange={s.setAutoOrganize}
+                label="Enable auto-organization"
+              />
+            }
+          >
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Let RNOTE detect categories, projects, people and tags so notes file themselves —
+              no folders. Works offline with built-in rules; sharper with AI on.
+            </p>
+            <Field label={`Ask me below ${s.confidenceThreshold}% confidence`}>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={5}
+                value={s.confidenceThreshold}
+                onChange={(e) => s.setConfidenceThreshold(Number(e.target.value))}
+                aria-label="Confidence threshold"
+                className="w-full accent-[hsl(var(--primary))]"
+              />
+            </Field>
+          </Section>
+
+          {/* ── Data ───────────────────────────────────────────── */}
+          <Section title="Data">
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Everything lives in this browser. Export a backup regularly so you never lose it.
+            </p>
+            <div className="mt-1 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => void exportBackup()}
+                className="flex h-9 items-center gap-2 rounded-md border border-border px-3 text-sm text-foreground transition hover:bg-surface-hover"
+              >
+                <Download size={15} /> Export backup (.json)
+              </button>
+              <button
+                type="button"
+                onClick={() => void importBackup()}
+                className="flex h-9 items-center gap-2 rounded-md border border-border px-3 text-sm text-foreground transition hover:bg-surface-hover"
+              >
+                <Upload size={15} /> Import backup…
+              </button>
+            </div>
+          </Section>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+function Section({
+  icon,
+  title,
+  action,
+  children,
+}: {
+  icon?: ReactNode;
+  title: string;
+  action?: ReactNode;
+  children: ReactNode;
+}): JSX.Element {
+  return (
+    <section className="border-b border-border py-4 first:pt-0 last:border-b-0">
+      <div className="mb-2.5 flex items-center gap-2">
+        {icon}
+        <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+        {action && <span className="ml-auto">{action}</span>}
+      </div>
+      <div className="flex flex-col gap-3">{children}</div>
+    </section>
+  );
+}
+
+function Field({ label, children }: { label: string; children: ReactNode }): JSX.Element {
+  return (
+    <label className="block">
+      <span className="mb-1 block text-xs font-medium text-muted-foreground">{label}</span>
+      {children}
+    </label>
+  );
+}
+
+function Toggle({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean;
+  onChange: (value: boolean) => void;
+  label: string;
+}): JSX.Element {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      onClick={() => onChange(!checked)}
+      className={cn(
+        'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors',
+        checked ? 'bg-primary' : 'bg-surface-hover',
+      )}
+    >
+      <span
+        className={cn(
+          'inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform',
+          checked ? 'translate-x-4' : 'translate-x-0.5',
+        )}
+      />
+    </button>
+  );
+}

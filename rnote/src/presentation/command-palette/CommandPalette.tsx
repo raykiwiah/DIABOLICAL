@@ -14,6 +14,7 @@ import {
   LayoutTemplate,
   Maximize2,
   BookOpen,
+  Settings,
   Zap,
 } from 'lucide-react';
 import type { DocumentTreeNode } from '@application/dto';
@@ -26,7 +27,7 @@ import { cn } from '../lib/cn';
 import { downloadFile, pickTextFile, slugify } from '../lib/files';
 import { modLabel } from '../lib/platform';
 import { richDocToMarkdown } from '../lib/markdown';
-import { emit, OPEN_TEMPLATES_EVENT, OPEN_CAPTURE_EVENT } from '../lib/events';
+import { emit, OPEN_TEMPLATES_EVENT, OPEN_CAPTURE_EVENT, OPEN_SETTINGS_EVENT } from '../lib/events';
 import { markBackedUp } from '../lib/backupState';
 
 interface CommandPaletteProps {
@@ -124,6 +125,14 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps): JSX.Elem
         title: reading ? 'Exit reading mode' : 'Enter reading mode',
         subtitle: 'Distraction-free, read-only',
         run: toggleReading,
+      },
+      {
+        key: 'open-settings',
+        group: 'Actions',
+        icon: <Settings size={16} />,
+        title: 'Settings',
+        subtitle: 'AI, auto-organization, data',
+        run: () => emit(OPEN_SETTINGS_EVENT),
       },
       {
         key: 'export-backup',

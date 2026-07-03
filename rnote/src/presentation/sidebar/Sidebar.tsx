@@ -1,5 +1,5 @@
 import { useState, lazy, Suspense } from 'react';
-import { Search, Plus, Sparkles, Trash2, Home as HomeIcon, CalendarDays } from 'lucide-react';
+import { Search, Plus, Sparkles, Trash2, Home as HomeIcon, CalendarDays, Settings } from 'lucide-react';
 import { useWorkspace } from '../state/workspace';
 import { usePreferences } from '../state/preferences';
 import { DocTreeItem } from './DocTreeItem';
@@ -7,6 +7,7 @@ import { Kbd } from '../components/Kbd';
 import { ThemeModeControls } from '../components/ThemeModeControls';
 import { cn } from '../lib/cn';
 import { modLabel } from '../lib/platform';
+import { emit, OPEN_SETTINGS_EVENT } from '../lib/events';
 
 const TrashModal = lazy(() =>
   import('../trash/TrashModal').then((m) => ({ default: m.TrashModal })),
@@ -102,6 +103,14 @@ export function Sidebar({ onOpenSearch }: SidebarProps): JSX.Element {
         >
           <Trash2 size={15} />
           <span className="flex-1 text-left">Trash</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => emit(OPEN_SETTINGS_EVENT)}
+          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-surface-hover"
+        >
+          <Settings size={15} />
+          <span className="flex-1 text-left">Settings</span>
         </button>
         <div className="px-1 pt-2">
           <ThemeModeControls />

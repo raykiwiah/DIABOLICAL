@@ -11,6 +11,9 @@ import { TauriSqliteWorkspaceRepository } from '@infrastructure/persistence/sqli
 import { FlexSearchIndex } from '@infrastructure/search/FlexSearchIndex';
 import { SystemClock } from '@infrastructure/time/SystemClock';
 import { isTauri } from '@infrastructure/platform';
+import type { AiProvider } from '@application/ports/AiProvider';
+import { readAiConfig, resolveModel, resolveKey } from '@infrastructure/ai/aiConfig';
+import { createAiProvider } from '@infrastructure/ai/createAiProvider';
 
 /**
  * The composition root — the *only* module that knows both the ports and their
@@ -51,3 +54,20 @@ export function createContainer(): Container {
 
 /** App-wide singleton container for the running client. */
 export const container: Container = createContainer();
+
+/**
+ * Resolve the user's configured AI provider, or `null` when AI is off or no key
+ * is set. Read lazily from local settings on every call so toggling AI in
+ * Settings takes effect immediately. Every caller must handle the null
+ * (degraded/offline) path — AI is always optional.
+ *
+ * @param opts.ignoreEnabled - build the provider even when the master toggle is
+ *   off (used by the Settings "Test connection" button during setup).
+ */
+export function getAiProvider(opts?: { ignoreEnabled?: boolean }): AiProvider | null {
+  const cfg = readAiConfig();
+  if (!opts?.ignoreEnabled && !cfg.enabled) return null;
+  const apiKey = resolveKey(cfg);
+  if (!apiKey) return null;
+  return createAiProvider({ id: cfg.provider, apiKey, model: resolveModel(cfg) });
+}

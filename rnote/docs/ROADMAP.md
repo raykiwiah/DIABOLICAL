@@ -15,7 +15,8 @@ don't have — do the best web-only version, else document and skip).
 ### Core principles
 Offline-first ✅ · Local-first ✅ · Privacy-first ✅ · Fast ✅ · Accessible ✅ ·
 Modular ✅ · Scalable ✅ · Dark mode ✅ · Responsive ◐ · Beautiful ◐ (deepen) ·
-AI-optional ▷ · Bring-your-own-AI ▷ · Bring-your-own-cloud ◐ (SQLite done, cloud ▷) ·
+AI-optional ✅ · Bring-your-own-AI ✅ (provider port + 4 adapters + settings/consent,
+off by default) · Bring-your-own-cloud ◐ (SQLite done, cloud ▷) ·
 Zero lock-in ◐ (JSON+MD export ✅, more import ▷) · Extensible ▷ (plugins)
 
 ### Modes
@@ -48,7 +49,10 @@ Local + global search ✅ (⌘K) · Keyboard shortcuts ◐ (⌘K/⌘\/⌘., plat
 labels) · Export ✅ · Import ◐ · Version history ▷
 
 ### AI (bring-your-own)
-AI assistant ▷ · AI chat with notes ▷ · Adaptive AI ▷ · AI companion ▷ ·
+Provider foundation ✅ (AiProvider port; Anthropic/OpenAI/Gemini/OpenRouter fetch
+adapters; Settings with consent, Test connection; off by default; graceful null
+path) · AI assistant ▷ · AI chat with notes ▷ · Auto-organization ▷ (Upgrade 2 · B) ·
+Time Machine ▷ (Upgrade 2 · C) · Adaptive AI ▷ · AI companion ▷ ·
 OCR ⛔(needs model) · Voice notes ◐(Web Speech API possible) · Meeting notes ▷ ·
 PDF annotate/summarize ▷ · Document scanner ⛔(camera/native)
 
@@ -91,10 +95,13 @@ Theme studio ▷ · Widget studio ▷ · Marketplace ▷ · PWA installable ✅
       built on collections + dashboard widgets.
 - [ ] **I9 · Journals.** Journal / Prayer / Dream journals with calendar
       navigation and daily entries.
-- [ ] **I10 · AI (bring-your-own) foundation.** Settings for provider + API key
-      (OpenAI/Claude/Gemini/OpenRouter/local), stored locally; an `AiProvider`
-      port; AI assist in the editor (improve/summarize/continue) + AI chat with
-      the current page. No RNOTE-side cost.
+- [◐] **I10 · AI (bring-your-own) foundation.** ✅ Provider foundation shipped
+      (Upgrade 2 · Phase A): `AiProvider` port; Anthropic/OpenAI/Gemini/OpenRouter
+      `fetch` adapters (no SDKs); Settings modal with consent, provider/model/key,
+      and Test connection; keys stored locally under `rnote.ai.*`; `getAiProvider()`
+      returns null when off/keyless so every path degrades gracefully; ADR 0004.
+      ▷ Remaining: AI assist in the editor (improve/summarize/continue) + AI chat
+      with the current page. (Auto-organization = Upgrade 2 · B; Time Machine = C.)
 - [ ] **I11 · Version history** (event-sourced snapshots per page) + restore.
 - [ ] **I12 · Import** (Markdown files, Notion/HTML) + richer export (per-page &
       whole-workspace Markdown, HTML).

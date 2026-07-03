@@ -10,7 +10,13 @@ import { useWorkspace } from '../state/workspace';
 import { useViewMode } from '../state/viewMode';
 import { useHotkey } from '../hooks/useHotkey';
 import { IconButton } from '../components/IconButton';
-import { emit, OPEN_TEMPLATES_EVENT, OPEN_CAPTURE_EVENT, OPEN_SEARCH_EVENT } from '../lib/events';
+import {
+  emit,
+  OPEN_TEMPLATES_EVENT,
+  OPEN_CAPTURE_EVENT,
+  OPEN_SEARCH_EVENT,
+  OPEN_SETTINGS_EVENT,
+} from '../lib/events';
 
 // Loaded on demand.
 const CommandPalette = lazy(() =>
@@ -22,6 +28,9 @@ const TemplatePicker = lazy(() =>
 const QuickCapture = lazy(() =>
   import('../capture/QuickCapture').then((m) => ({ default: m.QuickCapture })),
 );
+const SettingsModal = lazy(() =>
+  import('../settings/SettingsModal').then((m) => ({ default: m.SettingsModal })),
+);
 
 /** The main workspace shell: sidebar · topbar · content, plus overlays. */
 export function AppShell(): JSX.Element {
@@ -29,6 +38,7 @@ export function AppShell(): JSX.Element {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [templatesOpen, setTemplatesOpen] = useState(false);
   const [captureOpen, setCaptureOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const view = useWorkspace((s) => s.view);
   const activeId = useWorkspace((s) => s.activeId);
   const focus = useViewMode((s) => s.focus);
@@ -56,13 +66,16 @@ export function AppShell(): JSX.Element {
     const openTemplates = (): void => setTemplatesOpen(true);
     const openCapture = (): void => setCaptureOpen(true);
     const openSearch = (): void => setPaletteOpen(true);
+    const openSettings = (): void => setSettingsOpen(true);
     window.addEventListener(OPEN_TEMPLATES_EVENT, openTemplates);
     window.addEventListener(OPEN_CAPTURE_EVENT, openCapture);
     window.addEventListener(OPEN_SEARCH_EVENT, openSearch);
+    window.addEventListener(OPEN_SETTINGS_EVENT, openSettings);
     return () => {
       window.removeEventListener(OPEN_TEMPLATES_EVENT, openTemplates);
       window.removeEventListener(OPEN_CAPTURE_EVENT, openCapture);
       window.removeEventListener(OPEN_SEARCH_EVENT, openSearch);
+      window.removeEventListener(OPEN_SETTINGS_EVENT, openSettings);
     };
   }, []);
 
@@ -156,6 +169,9 @@ export function AppShell(): JSX.Element {
       </Suspense>
       <Suspense fallback={null}>
         {captureOpen && <QuickCapture open onClose={() => setCaptureOpen(false)} />}
+      </Suspense>
+      <Suspense fallback={null}>
+        {settingsOpen && <SettingsModal open onClose={() => setSettingsOpen(false)} />}
       </Suspense>
 
       <Celebration />
