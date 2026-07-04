@@ -66,13 +66,16 @@ export function WeekWidget(): JSX.Element | null {
       </button>
 
       <div className="mt-3 flex items-end gap-1.5">
-        {days.map((d) => {
+        {days.map((d, i) => {
           const count = stats.perDay[d.key] ?? 0;
           return (
             <div key={d.key} className="flex flex-1 flex-col items-center gap-1">
-              <div
-                className="w-full rounded bg-gradient-to-t from-primary/40 to-accent/60"
+              <motion.div
+                className="w-full origin-bottom rounded bg-gradient-to-t from-primary/40 to-accent/60"
                 style={{ height: `${6 + (count / maxPerDay) * 34}px` }}
+                initial={{ scaleY: 0 }}
+                animate={{ scaleY: 1 }}
+                transition={{ delay: 0.15 + i * 0.05, type: 'spring', stiffness: 320, damping: 26 }}
                 title={`${count} on ${d.label}`}
               />
               <span className="text-[10px] text-subtle">{d.label}</span>

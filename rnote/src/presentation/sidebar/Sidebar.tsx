@@ -1,4 +1,5 @@
 import { useState, lazy, Suspense } from 'react';
+import { motion } from 'framer-motion';
 import { Search, Plus, Sparkles, Trash2, Home as HomeIcon, CalendarDays, Settings, History } from 'lucide-react';
 import { useWorkspace } from '../state/workspace';
 import { usePreferences } from '../state/preferences';
@@ -108,7 +109,16 @@ export function Sidebar({ onOpenSearch }: SidebarProps): JSX.Element {
           {tree.length === 0 ? (
             <p className="px-2 py-3 text-xs text-subtle">No pages yet.</p>
           ) : (
-            tree.map((node) => <DocTreeItem key={node.id} node={node} depth={0} />)
+            tree.map((node, i) => (
+              <motion.div
+                key={node.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: Math.min(i, 10) * 0.035, duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <DocTreeItem node={node} depth={0} />
+              </motion.div>
+            ))
           )}
         </nav>
       </div>

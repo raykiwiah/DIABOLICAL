@@ -22,7 +22,7 @@ interface TimelineState {
   forget: (docId: string) => void;
 }
 
-export const useTimeline = create<TimelineState>((set) => ({
+export const useTimeline = create<TimelineState>((set, get) => ({
   events: [],
   loaded: false,
 
@@ -39,6 +39,9 @@ export const useTimeline = create<TimelineState>((set) => ({
       title: title || 'Untitled',
       snippet: snippet.trim().slice(0, 140),
     });
+    // Keep in-memory events fresh so Home's week widget reflects new activity
+    // without a remount. Coalescing happens in the service, so re-list.
+    if (get().loaded) set({ events: await service.list(workspaceId) });
   },
 
   forget: (docId) => {

@@ -83,6 +83,24 @@
     box-shadow: 0 0 0 4px hsl(var(--primary) / 0.1);
   }
 
+  /* Hero band — a living gradient in Gen Z, a still wash in Millennial. */
+  .rn-hero {
+    background: var(--gradient-hero);
+  }
+  [data-mode='genz'] .rn-hero {
+    background-size: 200% 200%;
+    animation: rn-hero-pan 14s ease-in-out infinite;
+  }
+  [data-reduced-motion='true'] .rn-hero,
+  [data-mode='millennial'] .rn-hero {
+    animation: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rn-hero {
+      animation: none;
+    }
+  }
+
   /* Subtle skeleton shimmer used by loading states. */
   .rn-shimmer {
     position: relative;
@@ -363,4 +381,17 @@
 .rn-editor .ProseMirror img.rn-image.ProseMirror-selectednode {
   outline: 2px solid hsl(var(--primary));
   outline-offset: 2px;
+}
+
+/* Living hero gradient (Gen Z). GPU-cheap: only background-position moves. */
+@keyframes rn-hero-pan {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }

@@ -61,8 +61,7 @@ export function Home(): JSX.Element {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          className="-mx-2 rounded-2xl px-5 py-6 sm:px-7"
-          style={{ background: 'var(--gradient-hero)' }}
+          className="rn-hero -mx-2 rounded-2xl px-5 py-6 sm:px-7"
         >
           <p className="text-sm font-medium text-muted-foreground">
             {now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}

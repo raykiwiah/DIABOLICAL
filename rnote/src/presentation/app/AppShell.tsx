@@ -181,14 +181,19 @@ export function AppShell(): JSX.Element {
 
       {/* Desktop: floating quick-capture. Mobile: the bottom dock (below). */}
       {!immersive && (
-        <button
+        <motion.button
           type="button"
           aria-label="Quick capture"
           onClick={() => emit(OPEN_CAPTURE_EVENT)}
-          className="fixed bottom-5 right-5 z-30 hidden h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:brightness-110 active:scale-95 md:flex"
+          initial={{ scale: 0, rotate: -30 }}
+          animate={{ scale: 1, rotate: 0 }}
+          whileHover={{ scale: 1.1, rotate: 6 }}
+          whileTap={{ scale: 0.9 }}
+          transition={{ type: 'spring', stiffness: 380, damping: 22 }}
+          className="fixed bottom-5 right-5 z-30 hidden h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg md:flex"
         >
           <Zap size={20} />
-        </button>
+        </motion.button>
       )}
 
       {!immersive && (
