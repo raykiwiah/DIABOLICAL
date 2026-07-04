@@ -56,6 +56,10 @@
   --motion-scale: 0.7;
   --duration-fast: 120ms;
   --duration-base: 180ms;
+
+  /* Soft depth — Millennial gets a whisper-subtle neutral tint. */
+  --gradient-hero: linear-gradient(135deg, hsl(var(--primary) / 0.06), transparent 62%);
+  --gradient-card: linear-gradient(135deg, hsl(var(--primary) / 0.05), transparent);
 }
 
 /* ── Millennial · Dark ──────────────────────────────────────────────────── */
@@ -123,6 +127,15 @@
   --motion-scale: 1;
   --duration-fast: 160ms;
   --duration-base: 260ms;
+
+  /* Vibrant violet → pink → aqua washes for hero surfaces + collection icons. */
+  --gradient-hero: linear-gradient(
+    135deg,
+    hsl(var(--primary) / 0.2),
+    hsl(var(--accent) / 0.16) 55%,
+    hsl(190 90% 55% / 0.12)
+  );
+  --gradient-card: linear-gradient(135deg, hsl(var(--primary) / 0.14), hsl(var(--accent) / 0.09));
 }
 
 /* ── Gen Z · Dark (highest specificity — fully specified) ────────────────── */

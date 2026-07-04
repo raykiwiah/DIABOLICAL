@@ -19,6 +19,7 @@ import { cn } from '../lib/cn';
 import { emit, OPEN_TEMPLATES_EVENT, OPEN_SEARCH_EVENT } from '../lib/events';
 import { modLabel } from '../lib/platform';
 import { StatsCard } from '../gamification/StatsCard';
+import { WeekWidget } from './WeekWidget';
 import { BackupNudge } from './BackupNudge';
 
 /** The "Today" home dashboard — the default landing surface. */
@@ -59,6 +60,8 @@ export function Home(): JSX.Element {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          className="-mx-2 rounded-2xl px-5 py-6 sm:px-7"
+          style={{ background: 'var(--gradient-hero)' }}
         >
           <p className="text-sm font-medium text-muted-foreground">
             {now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
@@ -139,6 +142,9 @@ export function Home(): JSX.Element {
 
         {/* Progress (gamified in Gen Z, minimal in Millennial) */}
         <StatsCard />
+
+        {/* This week — activity strip + most-touched collections */}
+        <WeekWidget />
 
         {/* Recent */}
         <section className="mt-10">

@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Sparkles, Briefcase, Sun, Moon, ArrowRight, Check } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Sparkles, Briefcase, Sun, Moon, ArrowRight, Check, Wand2, ShieldCheck } from 'lucide-react';
 import { usePreferences, type ModeName, type ThemeName } from '../state/preferences';
+import { useAiSettings } from '../state/aiSettings';
 import { Button } from '../components/Button';
 import { cn } from '../lib/cn';
 
@@ -34,9 +35,16 @@ export function Onboarding(): JSX.Element {
   const setMode = usePreferences((s) => s.setMode);
   const setTheme = usePreferences((s) => s.setTheme);
   const completeOnboarding = usePreferences((s) => s.completeOnboarding);
+  const setAutoOrganize = useAiSettings((s) => s.setAutoOrganize);
 
   const [mode, setLocalMode] = useState<ModeName>(initialMode);
   const [theme, setLocalTheme] = useState<ThemeName>(initialTheme);
+  const [autoOrganize, setAutoOrganizeLocal] = useState(false);
+
+  const finish = (): void => {
+    setAutoOrganize(autoOrganize);
+    completeOnboarding({ mode, theme });
+  };
 
   // Apply choices live so the whole screen previews the selection.
   const chooseMode = (m: ModeName): void => {
@@ -151,13 +159,69 @@ export function Onboarding(): JSX.Element {
           </div>
         </div>
 
+        {/* Auto-organization — privacy-forward, defaults off. */}
+        <div className="mb-8 rounded-xl border border-border bg-surface p-4 text-left">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Wand2 size={16} />
+              </span>
+              <span className="text-sm font-semibold text-foreground">Organize my notes automatically</span>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={autoOrganize}
+              aria-label="Enable AI auto-organization"
+              onClick={() => setAutoOrganizeLocal((v) => !v)}
+              className={cn(
+                'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors',
+                autoOrganize ? 'bg-primary' : 'bg-surface-hover',
+              )}
+            >
+              <span
+                className={cn(
+                  'inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform',
+                  autoOrganize ? 'translate-x-4' : 'translate-x-0.5',
+                )}
+              />
+            </button>
+          </div>
+          <p className="mt-2 flex gap-2 text-xs leading-relaxed text-muted-foreground">
+            <ShieldCheck size={24} className="shrink-0 text-success" />
+            RNOTE sorts notes into Smart Collections on this device, for free, offline. Turn this on
+            to also use AI for sharper labels — you add your own API key in Settings, and nothing is
+            sent anywhere until you do.
+          </p>
+          <AnimatePresence>
+            {autoOrganize && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-3 overflow-hidden"
+              >
+                <div className="flex flex-wrap items-center gap-1.5 rounded-lg bg-surface-hover px-3 py-2 text-xs">
+                  <span className="text-muted-foreground">“buy oat milk” →</span>
+                  {['🛍️ Shopping', '#shopping', '✓ task'].map((chip, i) => (
+                    <motion.span
+                      key={chip}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.1 + i * 0.08, type: 'spring', stiffness: 400, damping: 24 }}
+                      className="rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-primary"
+                    >
+                      {chip}
+                    </motion.span>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
         <div className="flex justify-center">
-          <Button
-            variant="primary"
-            size="lg"
-            onClick={() => completeOnboarding({ mode, theme })}
-            className="min-w-[220px]"
-          >
+          <Button variant="primary" size="lg" onClick={finish} className="min-w-[220px]">
             Enter RNOTE
             <ArrowRight size={18} />
           </Button>

@@ -7,6 +7,7 @@ import { DocumentEditor } from '../editor/DocumentEditor';
 import { Home } from '../home/Home';
 import { CollectionView } from '../collection/CollectionView';
 import { TimeMachine } from '../timeline/TimeMachine';
+import { MobileDock } from './MobileDock';
 import { Celebration } from '../gamification/Celebration';
 import { useWorkspace } from '../state/workspace';
 import { useViewMode } from '../state/viewMode';
@@ -160,16 +161,23 @@ export function AppShell(): JSX.Element {
         )}
       </AnimatePresence>
 
-      {/* Floating quick-capture button (hidden while writing in focus mode) */}
+      {/* Desktop: floating quick-capture. Mobile: the bottom dock (below). */}
       {!immersive && (
         <button
           type="button"
           aria-label="Quick capture"
           onClick={() => emit(OPEN_CAPTURE_EVENT)}
-          className="fixed bottom-5 right-5 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:brightness-110 active:scale-95"
+          className="fixed bottom-5 right-5 z-30 hidden h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:brightness-110 active:scale-95 md:flex"
         >
           <Zap size={20} />
         </button>
+      )}
+
+      {!immersive && (
+        <MobileDock
+          onOpenSearch={() => setPaletteOpen(true)}
+          onOpenSidebar={() => setSidebarOpen(true)}
+        />
       )}
 
       <Suspense fallback={null}>

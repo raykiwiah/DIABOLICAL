@@ -14,7 +14,8 @@ don't have — do the best web-only version, else document and skip).
 
 ### Core principles
 Offline-first ✅ · Local-first ✅ · Privacy-first ✅ · Fast ✅ · Accessible ✅ ·
-Modular ✅ · Scalable ✅ · Dark mode ✅ · Responsive ◐ · Beautiful ◐ (deepen) ·
+Modular ✅ · Scalable ✅ · Dark mode ✅ · Responsive ✅ (mobile dock + drawer) ·
+Beautiful ✅ (per-mode gradients, hero, widgets) ·
 AI-optional ✅ · Bring-your-own-AI ✅ (provider port + 4 adapters + settings/consent,
 off by default) · Bring-your-own-cloud ◐ (SQLite done, cloud ▷) ·
 Zero lock-in ◐ (JSON+MD export ✅, more import ▷) · Extensible ▷ (plugins)
@@ -58,7 +59,9 @@ cancellable, degrades to heuristics) + corrections learning ✅) ·
 Time Machine ✅ (Upgrade 2 · C — activity log + coalescing + TimelineService +
 month/day chapters with offline statistical digests + search/project filter;
 cached AI month recaps (focus/mood/highlights/open-loops) + natural-language ask,
-both graceful when AI is off) · Adaptive AI ▷ · AI companion ▷ ·
+both graceful when AI is off) · UI refresh ✅ (Upgrade 2 · D — per-mode gradient
+tokens + Home hero, "This week" widget, mobile floating dock, onboarding AI step,
+reusable Chip) · Adaptive AI ▷ · AI companion ▷ ·
 OCR ⛔(needs model) · Voice notes ◐(Web Speech API possible) · Meeting notes ▷ ·
 PDF annotate/summarize ▷ · Document scanner ⛔(camera/native)
 
