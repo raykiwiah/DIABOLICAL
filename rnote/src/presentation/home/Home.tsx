@@ -20,6 +20,7 @@ import { emit, OPEN_TEMPLATES_EVENT, OPEN_SEARCH_EVENT } from '../lib/events';
 import { modLabel } from '../lib/platform';
 import { StatsCard } from '../gamification/StatsCard';
 import { WeekWidget } from './WeekWidget';
+import { AgendaWidget } from './AgendaWidget';
 import { BackupNudge } from './BackupNudge';
 
 /** The "Today" home dashboard — the default landing surface. */
@@ -67,9 +68,11 @@ export function Home(): JSX.Element {
             {now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
           </p>
           <h1 className="mt-1 flex items-center gap-2 font-display text-3xl font-bold tracking-tight text-foreground">
-            <span>
+            <span className={mode === 'genz' ? 'rn-gradient-text' : undefined}>
               {greeting(now.getHours())}
-              {userName && <span className="text-primary">, {userName}</span>}
+              {userName && (
+                <span className={mode === 'genz' ? undefined : 'text-primary'}>, {userName}</span>
+              )}
             </span>
             {mode === 'genz' && <Sparkles size={22} className="text-accent" />}
           </h1>
@@ -142,6 +145,9 @@ export function Home(): JSX.Element {
             onClick={() => emit(OPEN_SEARCH_EVENT)}
           />
         </div>
+
+        {/* Today's agenda from connected calendars (hidden until connected) */}
+        <AgendaWidget />
 
         {/* Progress (gamified in Gen Z, minimal in Millennial) */}
         <StatsCard />

@@ -1,9 +1,33 @@
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Flame, Trophy } from 'lucide-react';
 import { useGameStats } from '../state/gameStats';
 import { usePreferences } from '../state/preferences';
 import { cn } from '../lib/cn';
 import { ACHIEVEMENTS, levelProgress } from './leveling';
+
+/** Animated integer that eases toward its target — numbers feel alive. */
+function CountUp({ value }: { value: number }): JSX.Element {
+  const [shown, setShown] = useState(value);
+  const fromRef = useRef(value);
+  useEffect(() => {
+    const from = fromRef.current;
+    if (from === value) return;
+    const start = performance.now();
+    const duration = 650;
+    let raf = 0;
+    const tick = (now: number): void => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - (1 - t) ** 3;
+      setShown(Math.round(from + (value - from) * eased));
+      if (t < 1) raf = requestAnimationFrame(tick);
+      else fromRef.current = value;
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value]);
+  return <>{shown}</>;
+}
 
 /**
  * Progress widget for the Home dashboard. The numbers are identical in both
@@ -74,7 +98,9 @@ export function StatsCard(): JSX.Element {
         {/* XP + next-level */}
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-sm font-semibold text-foreground">{xp} XP</span>
+            <span className="text-sm font-semibold tabular-nums text-foreground">
+              <CountUp value={xp} /> XP
+            </span>
             <span className="text-xs text-muted-foreground">{toNext} to next</span>
           </div>
           <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-surface-hover">

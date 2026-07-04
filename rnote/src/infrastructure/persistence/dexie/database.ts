@@ -4,6 +4,7 @@ import type {
   WorkspaceRecord,
   OrganizationRecord,
   ActivityRecord,
+  CalendarEventRecord,
 } from './records';
 
 /**
@@ -20,6 +21,7 @@ export class RnoteDatabase extends Dexie {
   workspaces!: Table<WorkspaceRecord, string>;
   organizations!: Table<OrganizationRecord, string>;
   activity!: Table<ActivityRecord, number>;
+  calendar_events!: Table<CalendarEventRecord, string>;
 
   constructor(name = 'rnote') {
     super(name);
@@ -38,6 +40,10 @@ export class RnoteDatabase extends Dexie {
     // chronological range queries; docId indexed for coalescing + cleanup.
     this.version(3).stores({
       activity: '++id, docId, [workspaceId+at]',
+    });
+    // v4 — bring-your-own-calendar (ICS). Events are replace-on-sync per source.
+    this.version(4).stores({
+      calendar_events: 'id, sourceId, start',
     });
   }
 }

@@ -42,8 +42,11 @@ Finance/Expense/Budget/Subscription/Loan ▷ · Health/Fitness ▷ · Goals ▷ 
 Travel planner ▷ · Recipe manager ▷ · Reading/Movie trackers ▷ · Project mgmt ▷
 
 ### Productivity surfaces
-Quick capture ✅ · Focus mode ✅ · Reading mode ✅ · Study mode ▷ · Flashcards ▷ ·
-Adaptive dashboard / widget homepage ▷ · Templates ✅
+Quick capture ✅ (+⌘⇧N) · Focus mode ✅ · Reading mode ✅ · Study mode ▷ · Flashcards ▷ ·
+Calendar connect ✅ (bring-your-own ICS link/file · Dexie v4 · Today's-agenda widget
+with Up-next · 15-min local reminders, permission-gated · Google/Outlook CORS
+fallback to file import) · Adaptive dashboard / widget homepage ◐ (agenda + week +
+stats widgets) · Templates ✅
 
 ### Search / data / shortcuts
 Local + global search ✅ (⌘K) · Keyboard shortcuts ◐ (⌘K/⌘\/⌘., platform-correct

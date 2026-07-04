@@ -101,6 +101,32 @@
     }
   }
 
+  /* Gradient text that slowly shimmers in Gen Z (static gradient elsewhere). */
+  .rn-gradient-text {
+    background: linear-gradient(
+      100deg,
+      hsl(var(--foreground)) 0%,
+      hsl(var(--primary)) 35%,
+      hsl(var(--accent)) 55%,
+      hsl(var(--foreground)) 80%
+    );
+    background-size: 250% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  [data-mode='genz'] .rn-gradient-text {
+    animation: rn-hero-pan 9s ease-in-out infinite;
+  }
+  [data-reduced-motion='true'] .rn-gradient-text {
+    animation: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rn-gradient-text {
+      animation: none;
+    }
+  }
+
   /* Subtle skeleton shimmer used by loading states. */
   .rn-shimmer {
     position: relative;

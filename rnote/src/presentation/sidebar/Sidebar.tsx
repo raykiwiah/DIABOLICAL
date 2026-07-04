@@ -50,14 +50,13 @@ export function Sidebar({ onOpenSearch }: SidebarProps): JSX.Element {
           type="button"
           onClick={showHome}
           className={cn(
-            'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
-            view === 'home'
-              ? 'bg-primary/10 text-foreground'
-              : 'text-muted-foreground hover:bg-surface-hover',
+            'relative flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
+            view === 'home' ? 'text-foreground' : 'text-muted-foreground hover:bg-surface-hover',
           )}
         >
-          <HomeIcon size={15} />
-          <span className="flex-1 text-left">Home</span>
+          {view === 'home' && <NavPill />}
+          <HomeIcon size={15} className="relative" />
+          <span className="relative flex-1 text-left">Home</span>
         </button>
         <button
           type="button"
@@ -71,14 +70,13 @@ export function Sidebar({ onOpenSearch }: SidebarProps): JSX.Element {
           type="button"
           onClick={openTimeline}
           className={cn(
-            'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
-            view === 'timeline'
-              ? 'bg-primary/10 text-foreground'
-              : 'text-muted-foreground hover:bg-surface-hover',
+            'relative flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
+            view === 'timeline' ? 'text-foreground' : 'text-muted-foreground hover:bg-surface-hover',
           )}
         >
-          <History size={15} />
-          <span className="flex-1 text-left">Time Machine</span>
+          {view === 'timeline' && <NavPill />}
+          <History size={15} className="relative" />
+          <span className="relative flex-1 text-left">Time Machine</span>
         </button>
         <button
           type="button"
@@ -149,5 +147,17 @@ export function Sidebar({ onOpenSearch }: SidebarProps): JSX.Element {
         {trashOpen && <TrashModal open onClose={() => setTrashOpen(false)} />}
       </Suspense>
     </aside>
+  );
+}
+
+/** Shared sliding highlight behind the active nav item (Linear-style). */
+function NavPill(): JSX.Element {
+  return (
+    <motion.span
+      layoutId="rn-nav-pill"
+      transition={{ type: 'spring', stiffness: 500, damping: 38 }}
+      className="absolute inset-0 rounded-md bg-primary/10"
+      aria-hidden
+    />
   );
 }

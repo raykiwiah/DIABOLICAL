@@ -11,6 +11,10 @@ import {
   ShieldCheck,
   Download,
   Upload,
+  CalendarClock,
+  RefreshCw,
+  Trash2,
+  Bell,
 } from 'lucide-react';
 import { isWorkspaceBackup } from '@application/documents/backup';
 import type { AiProviderId } from '@application/ports/AiProvider';
@@ -18,6 +22,7 @@ import { getAiProvider } from '@/composition/container';
 import { AI_PROVIDER_IDS, PROVIDER_LABELS, DEFAULT_MODELS } from '@infrastructure/ai/aiConfig';
 import { useAiSettings } from '../state/aiSettings';
 import { useWorkspace } from '../state/workspace';
+import { useCalendar } from '../state/calendar';
 import { cn } from '../lib/cn';
 import { downloadFile, pickTextFile } from '../lib/files';
 import { markBackedUp } from '../lib/backupState';
@@ -37,8 +42,10 @@ export function SettingsModal({ open, onClose }: SettingsModalProps): JSX.Elemen
   const s = useAiSettings();
   const buildBackup = useWorkspace((w) => w.buildBackup);
   const restoreBackup = useWorkspace((w) => w.restoreBackup);
+  const cal = useCalendar();
   const [showKey, setShowKey] = useState(false);
   const [test, setTest] = useState<TestState>({ status: 'idle' });
+  const [calUrl, setCalUrl] = useState('');
 
   useEffect(() => {
     if (!open) return;
@@ -235,6 +242,110 @@ export function SettingsModal({ open, onClose }: SettingsModalProps): JSX.Elemen
                 className="w-full accent-[hsl(var(--primary))]"
               />
             </Field>
+          </Section>
+
+          {/* ── Calendar ───────────────────────────────────────── */}
+          <Section
+            icon={<CalendarClock size={15} className="text-primary" />}
+            title="Calendar"
+            action={
+              cal.sources.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => void cal.refreshAll()}
+                  disabled={cal.syncing}
+                  className="flex h-7 items-center gap-1.5 rounded-md border border-border px-2 text-xs text-muted-foreground transition hover:bg-surface-hover disabled:opacity-50"
+                >
+                  <RefreshCw size={12} className={cal.syncing ? 'animate-spin' : undefined} />
+                  Refresh
+                </button>
+              ) : undefined
+            }
+          >
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Connect a calendar so RNOTE shows today&apos;s agenda on Home and reminds you before
+              events. Paste a calendar link (.ics), or import an exported .ics file — everything
+              stays on this device.
+            </p>
+
+            {cal.sources.length > 0 && (
+              <ul className="space-y-1.5">
+                {cal.sources.map((source) => (
+                  <li
+                    key={source.id}
+                    className="flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2"
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm text-foreground">{source.name}</span>
+                      <span className="block text-[11px] text-subtle">
+                        {source.eventCount} events · synced {new Date(source.lastSync).toLocaleString()}
+                        {source.url ? '' : ' · file import'}
+                      </span>
+                    </span>
+                    <button
+                      type="button"
+                      aria-label={`Remove ${source.name}`}
+                      onClick={() => void cal.removeSource(source.id)}
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-subtle hover:bg-danger/10 hover:text-danger"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <div className="flex items-center gap-2">
+              <input
+                value={calUrl}
+                onChange={(e) => setCalUrl(e.target.value)}
+                placeholder="https://…/calendar.ics"
+                spellCheck={false}
+                className="rn-field h-9 min-w-0 flex-1 rounded-md border border-border bg-surface px-2.5 text-sm text-foreground outline-none placeholder:text-subtle"
+              />
+              <button
+                type="button"
+                disabled={cal.syncing || calUrl.trim().length < 8}
+                onClick={() => {
+                  void cal.addUrlSource(calUrl).then((ok2) => {
+                    if (ok2) setCalUrl('');
+                  });
+                }}
+                className="h-9 shrink-0 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground transition hover:brightness-110 disabled:opacity-40"
+              >
+                {cal.syncing ? 'Adding…' : 'Add'}
+              </button>
+              <button
+                type="button"
+                disabled={cal.syncing}
+                onClick={() => {
+                  void (async () => {
+                    const text = await pickTextFile('text/calendar,.ics');
+                    if (text) await cal.importIcsFile('Imported calendar.ics', text);
+                  })();
+                }}
+                className="h-9 shrink-0 rounded-md border border-border px-3 text-sm text-foreground transition hover:bg-surface-hover disabled:opacity-40"
+              >
+                Import file…
+              </button>
+            </div>
+            {cal.error && (
+              <p className="flex items-start gap-1.5 text-xs text-danger">
+                <AlertCircle size={13} className="mt-0.5 shrink-0" /> {cal.error}
+              </p>
+            )}
+
+            <div className="flex items-center justify-between rounded-lg border border-border bg-surface px-3 py-2">
+              <span className="flex items-center gap-2 text-sm text-foreground">
+                <Bell size={14} className="text-muted-foreground" />
+                Remind me 15 minutes before events
+              </span>
+              <Toggle
+                checked={cal.notifyEnabled}
+                onChange={(on) => void cal.setNotifyEnabled(on)}
+                label="Event reminders"
+              />
+            </div>
           </Section>
 
           {/* ── Data ───────────────────────────────────────────── */}

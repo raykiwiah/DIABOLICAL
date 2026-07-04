@@ -60,4 +60,16 @@ export interface ActivityRecord {
   snippet: string;
 }
 
+/** A calendar event instance imported from an ICS source (bring-your-own). */
+export interface CalendarEventRecord {
+  id: string; // `${sourceId}:${uid}:${start}`
+  sourceId: string;
+  uid: string;
+  title: string;
+  location: string;
+  start: number;
+  end: number;
+  allDay: 0 | 1;
+}
+
 export const ROOT_PARENT = '';

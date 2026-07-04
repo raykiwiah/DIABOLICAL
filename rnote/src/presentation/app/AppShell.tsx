@@ -11,6 +11,7 @@ import { MobileDock } from './MobileDock';
 import { Celebration } from '../gamification/Celebration';
 import { useWorkspace } from '../state/workspace';
 import { useViewMode } from '../state/viewMode';
+import { useCalendar } from '../state/calendar';
 import { useHotkey } from '../hooks/useHotkey';
 import { IconButton } from '../components/IconButton';
 import {
@@ -35,8 +36,23 @@ const SettingsModal = lazy(() =>
   import('../settings/SettingsModal').then((m) => ({ default: m.SettingsModal })),
 );
 
+const MOBILE_QUERY = '(max-width: 767px)';
+
+/** Track the mobile breakpoint reactively (resize + orientation changes). */
+function useIsMobile(): boolean {
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia(MOBILE_QUERY).matches);
+  useEffect(() => {
+    const mq = window.matchMedia(MOBILE_QUERY);
+    const onChange = (e: MediaQueryListEvent): void => setIsMobile(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+  return isMobile;
+}
+
 /** The main workspace shell: sidebar · topbar · content, plus overlays. */
 export function AppShell(): JSX.Element {
+  const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 768);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [templatesOpen, setTemplatesOpen] = useState(false);
@@ -57,6 +73,14 @@ export function AppShell(): JSX.Element {
   useHotkey('k', () => setPaletteOpen((o) => !o), { meta: true, allowInEditable: true });
   useHotkey('\\', () => setSidebarOpen((o) => !o), { meta: true, allowInEditable: true });
   useHotkey('.', () => toggleFocus(), { meta: true, allowInEditable: true });
+  useHotkey(
+    'n',
+    (e) => {
+      e.preventDefault();
+      setCaptureOpen(true);
+    },
+    { meta: true, shift: true, allowInEditable: true },
+  );
   useHotkey(
     'Escape',
     () => {
@@ -88,35 +112,53 @@ export function AppShell(): JSX.Element {
     if (window.innerWidth < 768) setSidebarOpen(false);
   }, [activeId, view]);
 
+  // Calendar reminders: load once, then check for imminent events each minute
+  // while the app is open (local notifications — no backend, no tracking).
+  useEffect(() => {
+    const cal = useCalendar.getState();
+    if (cal.sources.length > 0) void cal.load();
+    const timer = window.setInterval(() => {
+      const state = useCalendar.getState();
+      if (state.sources.length === 0) return;
+      void state.load().then(() => state.checkNotifications());
+    }, 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
+
   return (
     <MotionConfig reducedMotion="user">
     <div className="relative flex h-screen w-screen overflow-hidden bg-background text-foreground">
-      <AnimatePresence>
-        {!immersive && sidebarOpen && (
-          <>
-            {/* Scrim — mobile only */}
-            <motion.div
-              key="scrim"
-              className="fixed inset-0 z-40 bg-overlay/50 backdrop-blur-sm md:hidden"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSidebarOpen(false)}
-            />
-            {/* Static column on md+, slide-over drawer on mobile */}
-            <motion.div
-              key="drawer"
-              className="fixed inset-y-0 left-0 z-40 shadow-lg md:relative md:z-auto md:shadow-none"
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <Sidebar onOpenSearch={() => setPaletteOpen(true)} />
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      {/* Desktop: a static column, plainly mounted/unmounted (no exit dependency). */}
+      {!isMobile && !immersive && sidebarOpen && (
+        <Sidebar onOpenSearch={() => setPaletteOpen(true)} />
+      )}
+
+      {/* Mobile: an always-mounted slide-over drawer. Animating by state (never
+          exit-unmount) guarantees a closed drawer can never leave an invisible
+          scrim intercepting taps. */}
+      {isMobile && (
+        <>
+          <motion.div
+            initial={false}
+            animate={{ opacity: !immersive && sidebarOpen ? 1 : 0 }}
+            transition={{ duration: 0.18 }}
+            onClick={() => setSidebarOpen(false)}
+            className="fixed inset-0 z-40 bg-overlay/50 backdrop-blur-sm"
+            style={{ pointerEvents: !immersive && sidebarOpen ? 'auto' : 'none' }}
+            aria-hidden="true"
+          />
+          <motion.div
+            initial={false}
+            animate={{ x: !immersive && sidebarOpen ? 0 : -300 }}
+            transition={{ type: 'tween', duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed inset-y-0 left-0 z-40 shadow-lg"
+            style={{ pointerEvents: !immersive && sidebarOpen ? 'auto' : 'none' }}
+            aria-hidden={!(!immersive && sidebarOpen)}
+          >
+            <Sidebar onOpenSearch={() => setPaletteOpen(true)} />
+          </motion.div>
+        </>
+      )}
 
       <div className="flex min-w-0 flex-1 flex-col">
         {!immersive && (

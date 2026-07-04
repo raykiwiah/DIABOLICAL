@@ -14,7 +14,8 @@ export class OpenRouterProvider implements AiProvider {
       url: 'https://openrouter.ai/api/v1/chat/completions',
       headers: {
         authorization: `Bearer ${this.config.apiKey}`,
-        'HTTP-Referer': 'https://raykiwiah.github.io/DIABOLICAL/',
+        // Dynamic so the app survives repo/domain renames.
+        'HTTP-Referer': typeof location !== 'undefined' ? location.origin : 'https://rnote.local',
         'X-Title': 'RNOTE',
       },
       body: {
