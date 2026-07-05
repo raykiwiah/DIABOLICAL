@@ -14,6 +14,11 @@ import {
   docFromTable,
   tableFromDoc,
   isTableDoc,
+  setView,
+  setGroupBy,
+  boardColumn,
+  primaryColumn,
+  groupRows,
 } from '@domain/table';
 
 describe('table model', () => {
@@ -102,5 +107,63 @@ describe('table model', () => {
     expect(isTableDoc(doc)).toBe(true);
     expect(tableFromDoc(doc)).toEqual(t);
     expect(isTableDoc({ type: 'doc', content: [{ type: 'paragraph' }] })).toBe(false);
+  });
+
+  it('persists view mode and grouping as saved-view preferences', () => {
+    let t = createTable();
+    expect(t.view).toBeUndefined(); // older docs default to table
+    t = setView(t, 'board');
+    t = setGroupBy(t, t.columns[1]!.id);
+    const revived = tableFromDoc(docFromTable(t))!;
+    expect(revived.view).toBe('board');
+    expect(revived.groupBy).toBe(t.columns[1]!.id);
+  });
+
+  it('resolves the board column: saved groupBy, else first select, else null', () => {
+    let t = createTable();
+    const status = t.columns[1]!;
+    expect(boardColumn(t)!.id).toBe(status.id); // no groupBy → first select
+
+    t = addColumn(t, 'Priority', 'select');
+    const priority = t.columns[3]!;
+    t = setGroupBy(t, priority.id);
+    expect(boardColumn(t)!.id).toBe(priority.id); // saved groupBy honored
+
+    t = removeColumn(t, priority.id);
+    expect(boardColumn(t)!.id).toBe(status.id); // stale groupBy falls back
+
+    t = setColumnType(t, status.id, 'text');
+    expect(boardColumn(t)).toBeNull(); // no select column left
+  });
+
+  it('picks the first text column as the card title column', () => {
+    const t = createTable();
+    expect(primaryColumn(t)!.name).toBe('Name');
+    const noText: import('@domain/table').TableData = {
+      columns: [{ id: 'c1', name: 'Done', type: 'checkbox' }],
+      rows: [],
+    };
+    expect(primaryColumn(noText)!.id).toBe('c1'); // falls back to first column
+    expect(primaryColumn({ columns: [], rows: [] })).toBeNull();
+  });
+
+  it('groups rows into one lane per option plus a trailing null lane', () => {
+    let t = createTable();
+    const status = t.columns[1]!;
+    const [r1, r2, r3] = t.rows as [
+      (typeof t.rows)[0],
+      (typeof t.rows)[0],
+      (typeof t.rows)[0],
+    ];
+    t = updateCell(t, r1.id, status.id, 'Doing');
+    t = updateCell(t, r2.id, status.id, 'Todo');
+    t = updateCell(t, r3.id, status.id, 'Retired'); // stale value, not an option
+
+    const lanes = groupRows(t.rows, t.columns[1]!);
+    expect(lanes.map((l) => l.option)).toEqual(['Todo', 'Doing', 'Done', null]);
+    expect(lanes[0]!.rows.map((r) => r.id)).toEqual([r2.id]);
+    expect(lanes[1]!.rows.map((r) => r.id)).toEqual([r1.id]);
+    expect(lanes[2]!.rows).toHaveLength(0);
+    expect(lanes[3]!.rows.map((r) => r.id)).toEqual([r3.id]); // stale → null lane
   });
 });

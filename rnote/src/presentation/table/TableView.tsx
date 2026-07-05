@@ -13,6 +13,8 @@ import {
   CalendarDays,
   CheckSquare,
   X,
+  Table2,
+  Kanban,
 } from 'lucide-react';
 import type { RichDoc } from '@domain/blocks';
 import {
@@ -29,13 +31,16 @@ import {
   sortRows,
   filterRows,
   createTable,
+  setView,
   type TableData,
   type TableColumn,
   type ColumnType,
   type CellValue,
   type SortDirection,
+  type TableViewMode,
 } from '@domain/table';
 import { useOnClickOutside } from '../hooks/useOnClickOutside';
+import { BoardView } from './BoardView';
 import { cn } from '../lib/cn';
 
 const TYPE_META: Record<ColumnType, { label: string; icon: ReactNode }> = {
@@ -54,8 +59,9 @@ interface TableViewProps {
 /**
  * Databases v1 — the table view. Typed columns, inline cell editing, column
  * management, click-to-sort headers (rows shuffle with layout springs), and a
- * live filter. Pure operations from @domain/table; persistence flows through
- * the normal document save path.
+ * live filter. A saved Table ⇄ Board toggle re-renders the same rows as a
+ * kanban of select-column lanes. Pure operations from @domain/table;
+ * persistence flows through the normal document save path.
  */
 export function TableView({ content, onChange }: TableViewProps): JSX.Element {
   const [table, setTable] = useState<TableData>(() => tableFromDoc(content) ?? createTable());
@@ -69,6 +75,8 @@ export function TableView({ content, onChange }: TableViewProps): JSX.Element {
     setTable(next);
     onChange(docFromTable(next));
   };
+
+  const mode: TableViewMode = table.view ?? 'table';
 
   const visibleRows = useMemo(() => {
     const filtered = filterRows(table.rows, query);
@@ -88,18 +96,47 @@ export function TableView({ content, onChange }: TableViewProps): JSX.Element {
 
   return (
     <div className="mt-2">
-      {/* Toolbar: filter + active sort */}
+      {/* Toolbar: layout toggle + filter + active sort */}
       <div className="mb-2 flex items-center gap-2">
+        <div
+          role="tablist"
+          aria-label="Layout"
+          className="flex h-8 shrink-0 items-center gap-0.5 rounded-md border border-border bg-surface p-0.5"
+        >
+          {(
+            [
+              { value: 'table', label: 'Table', icon: <Table2 size={13} /> },
+              { value: 'board', label: 'Board', icon: <Kanban size={13} /> },
+            ] as const
+          ).map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              role="tab"
+              aria-selected={mode === option.value}
+              onClick={() => mode !== option.value && apply(setView(table, option.value))}
+              className={cn(
+                'flex h-[26px] items-center gap-1.5 rounded px-2 text-xs font-medium transition-colors',
+                mode === option.value
+                  ? 'bg-primary/15 text-primary'
+                  : 'text-subtle hover:bg-surface-hover hover:text-foreground',
+              )}
+            >
+              {option.icon}
+              {option.label}
+            </button>
+          ))}
+        </div>
         <div className="rn-field flex h-8 flex-1 items-center gap-2 rounded-md border border-border bg-surface px-2.5 sm:max-w-[280px]">
           <Search size={13} className="shrink-0 text-subtle" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Filter rows…"
+            placeholder={mode === 'board' ? 'Filter cards…' : 'Filter rows…'}
             className="h-full w-full bg-transparent text-sm text-foreground outline-none placeholder:text-subtle"
           />
         </div>
-        {sort && (
+        {sort && mode === 'table' && (
           <button
             type="button"
             onClick={() => setSort(null)}
@@ -117,6 +154,9 @@ export function TableView({ content, onChange }: TableViewProps): JSX.Element {
         </span>
       </div>
 
+      {mode === 'board' ? (
+        <BoardView table={table} query={query} apply={apply} />
+      ) : (
       <div className="rn-panel overflow-x-auto">
         <div role="table" aria-label="Table" className="min-w-fit text-sm">
           {/* Header */}
@@ -248,6 +288,7 @@ export function TableView({ content, onChange }: TableViewProps): JSX.Element {
           </button>
         </div>
       </div>
+      )}
     </div>
   );
 }
@@ -356,7 +397,7 @@ function Cell({
   );
 }
 
-// ── Header popovers ──────────────────────────────────────────────────────────
+// ── Header popovers ────────────────────────────────────────────────────────────
 function ColumnMenu({
   column,
   canDelete,
