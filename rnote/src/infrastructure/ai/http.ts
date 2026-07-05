@@ -1,4 +1,5 @@
 import { ok, err, type Result } from '@domain/shared/Result';
+import { isOnline } from '@infrastructure/net/connectivity';
 import { aiError, errorForStatus } from './errors';
 
 const DEFAULT_TIMEOUT_MS = 30_000;
@@ -13,10 +14,16 @@ export interface PostJsonConfig {
 }
 
 /**
- * POST JSON with a hard timeout and canonical error mapping. Never throws —
+ * POST JSON with a hard timeout and canonical error mapping. Never throws -
  * always resolves to a Result so callers stay on the happy Result path.
  */
 export async function postJson(cfg: PostJsonConfig): Promise<Result<unknown>> {
+  // Offline mode is a hard guarantee: never touch the wire. (Also covers the
+  // device simply having no connection while the user prefers Online.)
+  if (!isOnline()) {
+    return err(aiError('ai.offline', 'RNOTE is in Offline mode - switch to Online in Settings to use AI.'));
+  }
+
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), cfg.timeoutMs ?? DEFAULT_TIMEOUT_MS);
 

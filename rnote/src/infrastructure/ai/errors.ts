@@ -7,7 +7,8 @@ export type AiErrorCode =
   | 'ai.rate-limited'
   | 'ai.network'
   | 'ai.timeout'
-  | 'ai.bad-response';
+  | 'ai.bad-response'
+  | 'ai.offline';
 
 export const aiError = (code: AiErrorCode, message: string): DomainError => domainError(code, message);
 
