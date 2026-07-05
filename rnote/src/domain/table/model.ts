@@ -12,7 +12,7 @@ import type { RichDoc } from '../blocks/RichContent';
  */
 export type ColumnType = 'text' | 'number' | 'select' | 'date' | 'checkbox';
 
-export type TableViewMode = 'table' | 'board';
+export type TableViewMode = 'table' | 'board' | 'gallery';
 
 export interface TableColumn {
   id: string;
@@ -68,7 +68,7 @@ function emptyRow(columns: TableColumn[]): TableRow {
   return { id: uid('r'), cells };
 }
 
-// ── Operations (immutable) ──────────────────────────────────────────────────
+// ── Operations (immutable) ────────────────────────────────────────────────
 export function addRow(table: TableData): TableData {
   return { ...table, rows: [...table.rows, emptyRow(table.columns)] };
 }
@@ -239,7 +239,7 @@ export function groupRows(rows: TableRow[], column: TableColumn): BoardLane[] {
   ];
 }
 
-// ── Document embedding ──────────────────────────────────────────────────────────────────
+// ── Document embedding ──────────────────────────────────────────────────────────────
 /** Wrap table data as a document body (a single rnoteTable block). */
 export function docFromTable(table: TableData): RichDoc {
   return { type: 'doc', content: [{ type: TABLE_BLOCK, attrs: { data: table } }] };

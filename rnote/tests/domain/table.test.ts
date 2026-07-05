@@ -117,6 +117,7 @@ describe('table model', () => {
     const revived = tableFromDoc(docFromTable(t))!;
     expect(revived.view).toBe('board');
     expect(revived.groupBy).toBe(t.columns[1]!.id);
+    expect(tableFromDoc(docFromTable(setView(t, 'gallery')))!.view).toBe('gallery');
   });
 
   it('resolves the board column: saved groupBy, else first select, else null', () => {

@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Briefcase, Sun, Moon, ArrowRight, Check, Wand2, ShieldCheck } from 'lucide-react';
+import { Sparkles, Briefcase, Sun, Moon, ArrowRight, Check, Wand2, ShieldCheck, CloudOff, Wifi } from 'lucide-react';
+import type { ConnectivityPreference } from '@domain/connectivity';
 import { usePreferences, type ModeName, type ThemeName } from '../state/preferences';
 import { useAiSettings } from '../state/aiSettings';
+import { useConnectivity } from '../state/connectivity';
 import { Button } from '../components/Button';
 import { cn } from '../lib/cn';
 
@@ -36,6 +38,8 @@ export function Onboarding(): JSX.Element {
   const setTheme = usePreferences((s) => s.setTheme);
   const completeOnboarding = usePreferences((s) => s.completeOnboarding);
   const setAutoOrganize = useAiSettings((s) => s.setAutoOrganize);
+  const connectivity = useConnectivity((s) => s.preference);
+  const setConnectivity = useConnectivity((s) => s.setPreference);
 
   const [mode, setLocalMode] = useState<ModeName>(initialMode);
   const [theme, setLocalTheme] = useState<ThemeName>(initialTheme);
@@ -154,7 +158,7 @@ export function Onboarding(): JSX.Element {
           })}
         </div>
 
-        <div className="mb-8 flex items-center justify-center gap-3">
+        <div className="mb-4 flex items-center justify-center gap-3">
           <span className="text-sm text-muted-foreground">Appearance</span>
           <div className="flex items-center rounded-lg border border-border bg-surface p-0.5">
             {(
@@ -183,6 +187,41 @@ export function Onboarding(): JSX.Element {
             })}
           </div>
         </div>
+
+        {/* Connectivity — the privacy stance, chosen up front (changeable anytime). */}
+        <div className="mb-2 flex items-center justify-center gap-3">
+          <span className="text-sm text-muted-foreground">Connectivity</span>
+          <div className="flex items-center rounded-lg border border-border bg-surface p-0.5">
+            {(
+              [
+                { id: 'offline' as ConnectivityPreference, label: 'Offline', icon: CloudOff },
+                { id: 'online' as ConnectivityPreference, label: 'Online', icon: Wifi },
+              ]
+            ).map((c) => {
+              const Icon = c.icon;
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setConnectivity(c.id)}
+                  className={cn(
+                    'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-colors',
+                    connectivity === c.id
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  <Icon size={14} />
+                  {c.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <p className="mb-8 text-center text-xs text-subtle">
+          Offline keeps everything on this device; Online unlocks AI &amp; calendar sync. Auto-falls
+          back to offline whenever you lose connection.
+        </p>
 
         {/* Auto-organization — privacy-forward, defaults off. */}
         <div className="mb-8 rounded-xl border border-border bg-surface p-4 text-left">
