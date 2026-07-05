@@ -6,9 +6,13 @@ import type { RichDoc } from '../blocks/RichContent';
  * A table lives inside a normal document as a single `rnoteTable` block, so it
  * inherits the entire document pipeline (persistence, backup, trash, tree,
  * organization, timeline) without new storage. All operations here are pure and
- * immutable; view state (sort, filter) is presentation-only and never persisted.
+ * immutable. Ephemeral view state (sort, filter) is presentation-only and never
+ * persisted; the chosen layout (`view`) and board grouping (`groupBy`) are
+ * saved-view preferences and live in the data, like the columns themselves.
  */
 export type ColumnType = 'text' | 'number' | 'select' | 'date' | 'checkbox';
+
+export type TableViewMode = 'table' | 'board';
 
 export interface TableColumn {
   id: string;
@@ -28,6 +32,10 @@ export interface TableRow {
 export interface TableData {
   columns: TableColumn[];
   rows: TableRow[];
+  /** Saved layout; absent (older docs) means 'table'. */
+  view?: TableViewMode;
+  /** Board grouping column id — must reference a `select` column to apply. */
+  groupBy?: string;
 }
 
 export const TABLE_BLOCK = 'rnoteTable';
@@ -60,7 +68,7 @@ function emptyRow(columns: TableColumn[]): TableRow {
   return { id: uid('r'), cells };
 }
 
-// ── Operations (immutable) ───────────────────────────────────────────────────
+// ── Operations (immutable) ──────────────────────────────────────────────────
 export function addRow(table: TableData): TableData {
   return { ...table, rows: [...table.rows, emptyRow(table.columns)] };
 }
@@ -86,6 +94,7 @@ export function addColumn(table: TableData, name: string, type: ColumnType): Tab
     ...(type === 'select' ? { options: [] } : {}),
   };
   return {
+    ...table,
     columns: [...table.columns, column],
     rows: table.rows.map((r) => ({
       ...r,
@@ -117,6 +126,7 @@ export function setColumnType(table: TableData, columnId: string, type: ColumnTy
 export function removeColumn(table: TableData, columnId: string): TableData {
   if (table.columns.length <= 1) return table; // never delete the last column
   return {
+    ...table,
     columns: table.columns.filter((c) => c.id !== columnId),
     rows: table.rows.map((r) => {
       const cells = { ...r.cells };
@@ -177,7 +187,59 @@ export function filterRows(rows: TableRow[], query: string): TableRow[] {
   );
 }
 
-// ── Document embedding ───────────────────────────────────────────────────────
+// ── Board (kanban) — group rows by a select column ──────────────────────────
+export function setView(table: TableData, view: TableViewMode): TableData {
+  return { ...table, view };
+}
+
+export function setGroupBy(table: TableData, columnId: string): TableData {
+  return { ...table, groupBy: columnId };
+}
+
+/**
+ * The select column the board groups by: the saved `groupBy` when it still
+ * points at a select column, else the first select column, else null (the
+ * board then shows its "needs a select column" empty state).
+ */
+export function boardColumn(table: TableData): TableColumn | null {
+  const saved = table.columns.find((c) => c.id === table.groupBy && c.type === 'select');
+  if (saved) return saved;
+  return table.columns.find((c) => c.type === 'select') ?? null;
+}
+
+/** The column used as a card's title: the first text column, else the first column. */
+export function primaryColumn(table: TableData): TableColumn | null {
+  return table.columns.find((c) => c.type === 'text') ?? table.columns[0] ?? null;
+}
+
+export interface BoardLane {
+  /** The select option, or null for the "no value / stale value" lane. */
+  option: string | null;
+  rows: TableRow[];
+}
+
+/**
+ * One lane per select option (in option order) plus a trailing null lane for
+ * rows whose cell is empty or no longer matches an option. Every row lands in
+ * exactly one lane. Moving a card is just `updateCell(row, column, option)`.
+ */
+export function groupRows(rows: TableRow[], column: TableColumn): BoardLane[] {
+  const options = column.options ?? [];
+  const byOption = new Map<string, TableRow[]>(options.map((o) => [o, []]));
+  const ungrouped: TableRow[] = [];
+  for (const row of rows) {
+    const value = row.cells[column.id];
+    const lane = typeof value === 'string' ? byOption.get(value) : undefined;
+    if (lane) lane.push(row);
+    else ungrouped.push(row);
+  }
+  return [
+    ...options.map((option) => ({ option, rows: byOption.get(option) ?? [] })),
+    { option: null, rows: ungrouped },
+  ];
+}
+
+// ── Document embedding ──────────────────────────────────────────────────────────────────
 /** Wrap table data as a document body (a single rnoteTable block). */
 export function docFromTable(table: TableData): RichDoc {
   return { type: 'doc', content: [{ type: TABLE_BLOCK, attrs: { data: table } }] };
