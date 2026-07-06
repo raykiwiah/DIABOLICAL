@@ -23,19 +23,26 @@ describe('OpenRouter OAuth (PKCE)', () => {
     expect(challenge).toBe('E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM');
   });
 
-  it('builds an auth URL that carries the callback, challenge and state', () => {
+  it('builds an auth URL with a BARE callback (provider does not preserve extra params)', () => {
     const url = new URL(
-      buildAuthUrl({ callbackUrl: 'https://app.example/RNOTE/', challenge: 'CHAL', state: 'ST' }),
+      buildAuthUrl({ callbackUrl: 'https://app.example/RNOTE/', challenge: 'CHAL' }),
     );
     expect(url.origin + url.pathname).toBe('https://openrouter.ai/auth');
     expect(url.searchParams.get('code_challenge')).toBe('CHAL');
     expect(url.searchParams.get('code_challenge_method')).toBe('S256');
     const callback = new URL(url.searchParams.get('callback_url')!);
-    expect(callback.searchParams.get(OAUTH_STATE_PARAM)).toBe('ST');
+    expect(callback.toString()).toBe('https://app.example/RNOTE/');
+    expect(callback.search).toBe(''); // no query of our own — the real-flow bug
   });
 
-  it('parses code + state back out of a callback query', () => {
+  it('parses the code out of a callback query, however the provider shaped it', () => {
+    expect(parseCallback('?code=abc123')).toEqual({ code: 'abc123', state: null });
     expect(parseCallback('?code=abc123&rnote_oauth=ST')).toEqual({ code: 'abc123', state: 'ST' });
+    // A provider appending "?code=" onto a URL that already had a query:
+    expect(parseCallback(`?${OAUTH_STATE_PARAM}=ST?code=abc123`)).toEqual({
+      code: 'abc123',
+      state: 'ST',
+    });
     expect(parseCallback('?nope=1')).toEqual({ code: null, state: null });
   });
 

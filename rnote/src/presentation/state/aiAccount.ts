@@ -19,7 +19,7 @@ import { useAiSettings } from './aiSettings';
  * locally exactly like a pasted key - so the rest of the app is unchanged. The
  * pasted-key path stays available; this is a second, friendlier option.
  */
-const PENDING_KEY = 'rnote.ai.oauth.pending'; // { verifier, state, email }
+const PENDING_KEY = 'rnote.ai.oauth.pending'; // { verifier, email, state? (legacy) }
 const ACCOUNT_KEY = 'rnote.ai.account'; // { email, connectedAt }
 
 interface ConnectedAccount {
@@ -30,8 +30,9 @@ interface ConnectedAccount {
 
 interface Pending {
   verifier: string;
-  state: string;
   email: string;
+  /** Legacy: older builds round-tripped a state param; kept only to verify it if echoed. */
+  state?: string;
 }
 
 type Status = 'idle' | 'connecting' | 'exchanging' | 'error';
@@ -40,6 +41,11 @@ interface AiAccountState {
   account: ConnectedAccount | null;
   status: Status;
   error: string | null;
+  /** True right after a successful exchange, until the UI acknowledges it.
+      The exchange can finish before React mounts, so a transition is not
+      observable - this flag is. */
+  justConnected: boolean;
+  ackConnected: () => void;
   /** Begin the OAuth redirect (requires Online). `email` is a local label. */
   connect: (email: string) => Promise<void>;
   /** Finish the redirect: if the URL carries a code, swap it for a key. */
@@ -66,8 +72,12 @@ function readPending(): Pending | null {
     const raw = localStorage.getItem(PENDING_KEY);
     if (!raw) return null;
     const obj = JSON.parse(raw) as Partial<Pending>;
-    if (typeof obj.verifier === 'string' && typeof obj.state === 'string') {
-      return { verifier: obj.verifier, state: obj.state, email: obj.email ?? '' };
+    if (typeof obj.verifier === 'string') {
+      return {
+        verifier: obj.verifier,
+        email: obj.email ?? '',
+        ...(typeof obj.state === 'string' ? { state: obj.state } : {}),
+      };
     }
     return null;
   } catch {
@@ -101,6 +111,8 @@ export const useAiAccount = create<AiAccountState>((set) => ({
   account: readAccount(),
   status: 'idle',
   error: null,
+  justConnected: false,
+  ackConnected: () => set({ justConnected: false }),
 
   connect: async (email) => {
     if (!isOnline()) {
@@ -109,11 +121,12 @@ export const useAiAccount = create<AiAccountState>((set) => ({
     }
     set({ status: 'connecting', error: null });
     const verifier = randomToken();
-    const state = randomToken(16);
     const challenge = await codeChallenge(verifier);
-    safeSet(PENDING_KEY, JSON.stringify({ verifier, state, email: email.trim() }));
+    safeSet(PENDING_KEY, JSON.stringify({ verifier, email: email.trim() }));
+    // The callback URL must be bare — OpenRouter redirects to `callback?code=...`
+    // and does not preserve extra query params (this broke the first release).
     const callbackUrl = window.location.origin + window.location.pathname;
-    window.location.assign(buildAuthUrl({ callbackUrl, challenge, state }));
+    window.location.assign(buildAuthUrl({ callbackUrl, challenge }));
   },
 
   completeCallback: async () => {
@@ -123,7 +136,12 @@ export const useAiAccount = create<AiAccountState>((set) => ({
     // Always scrub the code from the URL so a reload can't re-trigger.
     const cleanUrl = window.location.origin + window.location.pathname;
     window.history.replaceState({}, '', cleanUrl);
-    if (!pending || pending.state !== state) {
+    if (!pending) {
+      set({ status: 'error', error: 'No sign-in was started on this device. Open Settings and try again.' });
+      return;
+    }
+    // Legacy in-flight pendings carried a state param; verify only if both sides have one.
+    if (pending.state && state && pending.state !== state) {
       set({ status: 'error', error: 'That sign-in link did not match this device. Try again.' });
       safeRemove(PENDING_KEY);
       return;
@@ -148,7 +166,7 @@ export const useAiAccount = create<AiAccountState>((set) => ({
       safeSet(ACCOUNT_KEY, JSON.stringify({ email: account.email, connectedAt: account.connectedAt }));
       safeRemove(PENDING_KEY);
       refreshAiSettings();
-      set({ account, status: 'idle', error: null });
+      set({ account, status: 'idle', error: null, justConnected: true });
     } catch {
       set({ status: 'error', error: 'Could not reach OpenRouter. Check your connection and retry.' });
       safeRemove(PENDING_KEY);
