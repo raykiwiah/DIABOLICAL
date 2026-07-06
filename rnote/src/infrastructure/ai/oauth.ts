@@ -32,25 +32,32 @@ export async function codeChallenge(verifier: string): Promise<string> {
   return base64Url(new Uint8Array(digest));
 }
 
-/** The URL to send the user to so they can authorize RNOTE on OpenRouter. */
-export function buildAuthUrl(opts: {
-  callbackUrl: string;
-  challenge: string;
-  state: string;
-}): string {
+/**
+ * The URL to send the user to so they can authorize RNOTE on OpenRouter.
+ *
+ * The callback URL must stay BARE (no query of our own): OpenRouter redirects
+ * back as `callback_url?code=...` and does not promise to preserve existing
+ * query params — piggybacking state there broke the real round trip. CSRF/mix-up
+ * protection comes from PKCE itself: a code can only be exchanged with the
+ * verifier whose challenge it was minted for, and ours never leaves this device.
+ */
+export function buildAuthUrl(opts: { callbackUrl: string; challenge: string }): string {
   const url = new URL(OPENROUTER_AUTH_URL);
-  // Round-trip our state on the callback URL (OpenRouter echoes it back verbatim).
-  const callback = new URL(opts.callbackUrl);
-  callback.searchParams.set(OAUTH_STATE_PARAM, opts.state);
-  url.searchParams.set('callback_url', callback.toString());
+  url.searchParams.set('callback_url', opts.callbackUrl);
   url.searchParams.set('code_challenge', opts.challenge);
   url.searchParams.set('code_challenge_method', 'S256');
   return url.toString();
 }
 
-/** Pull `{ code, state }` out of a returned `?...` query string. */
+/**
+ * Pull `{ code, state }` out of a returned `?...` query string. Defensive: some
+ * providers append `?code=...` even onto a URL that already has a query,
+ * yielding `?a=b?code=c` — normalize every '?' after the first to '&' so the
+ * code is still found.
+ */
 export function parseCallback(search: string): { code: string | null; state: string | null } {
-  const params = new URLSearchParams(search);
+  const normalized = search.replace(/\?/g, (m, offset: number) => (offset === 0 ? m : '&'));
+  const params = new URLSearchParams(normalized);
   return { code: params.get('code'), state: params.get(OAUTH_STATE_PARAM) };
 }
 

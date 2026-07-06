@@ -10,6 +10,7 @@ import { TimeMachine } from '../timeline/TimeMachine';
 import { MobileDock } from './MobileDock';
 import { Celebration } from '../gamification/Celebration';
 import { ConnectivityToast } from './ConnectivityToast';
+import { AiConnectToast } from './AiConnectToast';
 import { useWorkspace } from '../state/workspace';
 import { useViewMode } from '../state/viewMode';
 import { useCalendar } from '../state/calendar';
@@ -263,6 +264,7 @@ export function AppShell(): JSX.Element {
 
       <Celebration />
       <ConnectivityToast />
+      <AiConnectToast />
     </div>
     </MotionConfig>
   );
