@@ -144,7 +144,7 @@ export function AppShell(): JSX.Element {
 
   return (
     <MotionConfig reducedMotion="user">
-    <div className="relative flex h-screen w-screen overflow-hidden bg-background text-foreground">
+    <div className="rn-canvas relative flex h-screen w-screen overflow-hidden bg-background text-foreground">
       {/* Desktop: a static column, plainly mounted/unmounted (no exit dependency). */}
       {!isMobile && !immersive && sidebarOpen && (
         <Sidebar onOpenSearch={() => setPaletteOpen(true)} />

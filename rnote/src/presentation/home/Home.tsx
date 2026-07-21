@@ -15,6 +15,7 @@ import {
 import type { DocumentTreeNode } from '@application/dto';
 import { useWorkspace } from '../state/workspace';
 import { usePreferences } from '../state/preferences';
+import { useLexicon, type LexKey } from '../theme/lexicon';
 import { cn } from '../lib/cn';
 import { emit, OPEN_TEMPLATES_EVENT, OPEN_SEARCH_EVENT } from '../lib/events';
 import { modLabel } from '../lib/platform';
@@ -32,6 +33,7 @@ export function Home(): JSX.Element {
   const open = useWorkspace((s) => s.open);
   const mode = usePreferences((s) => s.mode);
   const userName = usePreferences((s) => s.userName);
+  const t = useLexicon();
 
   const [capture, setCapture] = useState('');
   const [captured, setCaptured] = useState<{ inboxId: string } | null>(null);
@@ -69,7 +71,7 @@ export function Home(): JSX.Element {
           </p>
           <h1 className="mt-1 flex items-center gap-2 font-display text-3xl font-bold tracking-tight text-foreground">
             <span className={mode === 'genz' ? 'rn-gradient-text' : undefined}>
-              {greeting(now.getHours())}
+              {t(greetingKey(now.getHours()))}
               {userName && (
                 <span className={mode === 'genz' ? undefined : 'text-primary'}>, {userName}</span>
               )}
@@ -94,7 +96,7 @@ export function Home(): JSX.Element {
             onKeyDown={(e) => {
               if (e.key === 'Enter') void submitCapture();
             }}
-            placeholder="Capture a thought, task, or idea…"
+            placeholder={t('home.capturePlaceholder')}
             className="h-9 flex-1 bg-transparent text-[15px] text-foreground outline-none placeholder:text-subtle"
           />
           <button
@@ -102,7 +104,7 @@ export function Home(): JSX.Element {
             onClick={() => void submitCapture()}
             className="flex h-9 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground transition hover:brightness-110"
           >
-            Capture <ArrowRight size={15} />
+            {t('home.captureButton')} <ArrowRight size={15} />
           </button>
         </motion.div>
         {captured && (
@@ -122,25 +124,25 @@ export function Home(): JSX.Element {
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <ActionCard
             icon={<Plus size={18} />}
-            title="New page"
-            subtitle="Start from blank"
+            title={t('home.action.newPage.title')}
+            subtitle={t('home.action.newPage.sub')}
             onClick={() => void createDocument(null)}
           />
           <ActionCard
             icon={<LayoutTemplate size={18} />}
-            title="Templates"
-            subtitle="Start from a layout"
+            title={t('home.action.templates.title')}
+            subtitle={t('home.action.templates.sub')}
             onClick={() => emit(OPEN_TEMPLATES_EVENT)}
           />
           <ActionCard
             icon={<CalendarDays size={18} />}
-            title="Today's note"
-            subtitle="Plan and reflect"
+            title={t('home.action.today.title')}
+            subtitle={t('home.action.today.sub')}
             onClick={() => void openToday()}
           />
           <ActionCard
             icon={<Search size={18} />}
-            title="Search"
+            title={t('home.action.search.title')}
             subtitle={`Press ${modLabel('K')}`}
             onClick={() => emit(OPEN_SEARCH_EVENT)}
           />
@@ -159,12 +161,12 @@ export function Home(): JSX.Element {
         <section className="mt-10">
           <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
             <Clock size={15} className="text-muted-foreground" />
-            Jump back in
+            {t('home.recent')}
           </div>
           {recent.length === 0 ? (
             <div className="rn-panel flex flex-col items-center gap-2 px-6 py-12 text-center">
               <FileText size={26} className="text-subtle" />
-              <p className="text-sm text-muted-foreground">No pages yet — capture something above.</p>
+              <p className="text-sm text-muted-foreground">{t('home.recentEmpty')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -232,11 +234,11 @@ function ActionCard({
   );
 }
 
-function greeting(hour: number): string {
-  if (hour < 5) return 'Still up?';
-  if (hour < 12) return 'Good morning';
-  if (hour < 18) return 'Good afternoon';
-  return 'Good evening';
+function greetingKey(hour: number): LexKey {
+  if (hour < 5) return 'greeting.lateNight';
+  if (hour < 12) return 'greeting.morning';
+  if (hour < 18) return 'greeting.afternoon';
+  return 'greeting.evening';
 }
 
 function flatten(tree: DocumentTreeNode[]): DocumentTreeNode[] {

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Briefcase, Sun, Moon, ArrowRight, Check, Wand2, ShieldCheck, CloudOff, Wifi } from 'lucide-react';
+import { Sparkles, Briefcase, Sun, Moon, ArrowRight, Check, Wand2, ShieldCheck, CloudOff, Wifi, Compass } from 'lucide-react';
 import type { ConnectivityPreference } from '@domain/connectivity';
-import { usePreferences, type ModeName, type ThemeName } from '../state/preferences';
+import { usePreferences, type ModeName, type ThemeName, type SkinName } from '../state/preferences';
 import { useAiSettings } from '../state/aiSettings';
 import { useConnectivity } from '../state/connectivity';
 import { Button } from '../components/Button';
@@ -43,6 +43,8 @@ export function Onboarding(): JSX.Element {
   const setAutoOrganize = useAiSettings((s) => s.setAutoOrganize);
   const connectivity = useConnectivity((s) => s.preference);
   const setConnectivity = useConnectivity((s) => s.setPreference);
+  const skin = usePreferences((s) => s.skin);
+  const setSkin = usePreferences((s) => s.setSkin);
 
   const [mode, setLocalMode] = useState<ModeName>(initialMode);
   const [theme, setLocalTheme] = useState<ThemeName>(initialTheme);
@@ -90,7 +92,7 @@ export function Onboarding(): JSX.Element {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-6 py-12">
+    <div className="rn-canvas flex min-h-screen items-center justify-center bg-background px-6 py-12">
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -215,6 +217,38 @@ export function Onboarding(): JSX.Element {
             })}
           </div>
         </div>
+
+        {/* Atmosphere — the optional Odysseus voyage (changeable anytime). */}
+        <div className="mb-2 flex items-center justify-center gap-3">
+          <span className="text-sm text-muted-foreground">Atmosphere</span>
+          <div className="flex items-center rounded-lg border border-border bg-surface p-0.5">
+            {(
+              [
+                { id: 'default' as SkinName, label: 'Default' },
+                { id: 'odysseus' as SkinName, label: 'Odysseus' },
+              ]
+            ).map((sk) => (
+              <button
+                key={sk.id}
+                type="button"
+                onClick={() => setSkin(sk.id)}
+                className={cn(
+                  'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-colors',
+                  skin === sk.id
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                {sk.id === 'odysseus' && <Compass size={14} />}
+                {sk.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <p className="mb-6 text-center text-xs text-subtle">
+          Odysseus reimagines RNOTE as a cinematic voyage — deep navy, bronze and constellations.
+          Change it anytime.
+        </p>
 
         {/* Connectivity — the privacy stance, chosen up front (changeable anytime). */}
         <div className="mb-2 flex items-center justify-center gap-3">

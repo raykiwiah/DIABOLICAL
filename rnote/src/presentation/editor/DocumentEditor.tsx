@@ -7,6 +7,7 @@ import { isTableDoc, tableFromDoc } from '@domain/table';
 import type { DocumentDetail } from '@application/dto';
 import { useWorkspace } from '../state/workspace';
 import { useViewMode } from '../state/viewMode';
+import { useLexicon } from '../theme/lexicon';
 import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
 import { cn } from '../lib/cn';
 import { Editor } from './Editor';
@@ -31,6 +32,7 @@ function DocumentEditorInner({ doc }: { doc: DocumentDetail }): JSX.Element {
   const setIcon = useWorkspace((s) => s.setIcon);
   const saving = useWorkspace((s) => s.saving);
   const reading = useViewMode((s) => s.reading);
+  const t = useLexicon();
 
   // A "table page" renders the database view instead of the rich-text editor.
   const isTable = useMemo(() => isTableDoc(doc.content), [doc.content]);
@@ -85,7 +87,7 @@ function DocumentEditorInner({ doc }: { doc: DocumentDetail }): JSX.Element {
             }
           }}
           rows={1}
-          placeholder="Untitled"
+          placeholder={t('editor.untitled')}
           spellCheck={false}
           readOnly={reading}
           aria-label="Page title"
@@ -115,7 +117,7 @@ function DocumentEditorInner({ doc }: { doc: DocumentDetail }): JSX.Element {
               saving ? 'bg-warning' : 'bg-success'
             }`}
           />
-          {saving ? 'Saving…' : 'Saved locally'}
+          {saving ? t('editor.saving') : t('editor.saved')}
         </span>
       </footer>
     </div>
@@ -197,16 +199,15 @@ function StatRow({ label, value }: { label: string; value: string }): JSX.Elemen
 }
 
 function EmptyState(): JSX.Element {
+  const t = useLexicon();
   return (
     <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-hover text-muted-foreground">
         <FileText size={28} strokeWidth={1.5} />
       </div>
       <div>
-        <p className="text-base font-medium text-foreground">No page open</p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Select a page from the sidebar or create a new one.
-        </p>
+        <p className="text-base font-medium text-foreground">{t('editor.emptyTitle')}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{t('editor.emptyBody')}</p>
       </div>
     </div>
   );

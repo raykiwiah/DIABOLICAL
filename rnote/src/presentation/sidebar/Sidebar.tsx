@@ -1,14 +1,32 @@
 import { useState, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Plus, Sparkles, Trash2, Home as HomeIcon, CalendarDays, Settings, History } from 'lucide-react';
+import {
+  Search,
+  Plus,
+  Sparkles,
+  Trash2,
+  Home as HomeIcon,
+  CalendarDays,
+  Settings,
+  History,
+  Anchor,
+  Sun,
+  Compass,
+  Telescope,
+  Feather,
+  Skull,
+  Landmark,
+} from 'lucide-react';
 import { useWorkspace } from '../state/workspace';
 import { usePreferences } from '../state/preferences';
 import { useConnectivity } from '../state/connectivity';
+import { useLexicon } from '../theme/lexicon';
 import { DocTreeItem } from './DocTreeItem';
 import { SmartCollections } from './SmartCollections';
 import { Kbd } from '../components/Kbd';
 import { ThemeModeControls } from '../components/ThemeModeControls';
 import { ConnectivityControls } from '../components/ConnectivityControls';
+import { AtmosphereControls } from '../components/AtmosphereControls';
 import { cn } from '../lib/cn';
 import { modLabel } from '../lib/platform';
 import { emit, OPEN_SETTINGS_EVENT } from '../lib/events';
@@ -30,9 +48,21 @@ export function Sidebar({ onOpenSearch }: SidebarProps): JSX.Element {
   const openTimeline = useWorkspace((s) => s.openTimeline);
   const view = useWorkspace((s) => s.view);
   const mode = usePreferences((s) => s.mode);
+  const skin = usePreferences((s) => s.skin);
   const effective = useConnectivity((s) => s.effective);
   const autoOffline = useConnectivity((s) => s.autoOffline);
   const [trashOpen, setTrashOpen] = useState(false);
+  const t = useLexicon();
+
+  // Under Odysseus, generic icons become refined mythology symbols.
+  const ody = skin === 'odysseus';
+  const IHome = ody ? Anchor : HomeIcon;
+  const IToday = ody ? Sun : CalendarDays;
+  const ITime = ody ? Compass : History;
+  const ISearch = ody ? Telescope : Search;
+  const INew = ody ? Feather : Plus;
+  const ITrash = ody ? Skull : Trash2;
+  const ISettings = ody ? Landmark : Settings;
 
   // The workspace stance, shown as a tiny live chip next to the presentation mode.
   const conn =
@@ -69,16 +99,16 @@ export function Sidebar({ onOpenSearch }: SidebarProps): JSX.Element {
           )}
         >
           {view === 'home' && <NavPill />}
-          <HomeIcon size={15} className="relative" />
-          <span className="relative flex-1 text-left">Home</span>
+          <IHome size={15} className="relative" />
+          <span className="relative flex-1 text-left">{t('nav.home')}</span>
         </button>
         <button
           type="button"
           onClick={() => void openToday()}
           className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-surface-hover"
         >
-          <CalendarDays size={15} />
-          <span className="flex-1 text-left">Today</span>
+          <IToday size={15} />
+          <span className="flex-1 text-left">{t('nav.today')}</span>
         </button>
         <button
           type="button"
@@ -89,8 +119,8 @@ export function Sidebar({ onOpenSearch }: SidebarProps): JSX.Element {
           )}
         >
           {view === 'timeline' && <NavPill />}
-          <History size={15} className="relative" />
-          <span className="relative flex-1 text-left">Time Machine</span>
+          <ITime size={15} className="relative" />
+          <span className="relative flex-1 text-left">{t('nav.timeMachine')}</span>
         </button>
         <button
           type="button"
@@ -98,8 +128,8 @@ export function Sidebar({ onOpenSearch }: SidebarProps): JSX.Element {
           onClick={onOpenSearch}
           className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-surface-hover"
         >
-          <Search size={15} />
-          <span className="flex-1 text-left">Search</span>
+          <ISearch size={15} />
+          <span className="flex-1 text-left">{t('nav.search')}</span>
           <Kbd>{modLabel('K')}</Kbd>
         </button>
         <button
@@ -108,8 +138,8 @@ export function Sidebar({ onOpenSearch }: SidebarProps): JSX.Element {
           onClick={() => createDocument(null)}
           className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-surface-hover"
         >
-          <Plus size={15} />
-          <span className="flex-1 text-left">New page</span>
+          <INew size={15} />
+          <span className="flex-1 text-left">{t('nav.newPage')}</span>
         </button>
       </div>
 
@@ -117,11 +147,11 @@ export function Sidebar({ onOpenSearch }: SidebarProps): JSX.Element {
         <SmartCollections />
 
         <div className="mt-1 px-2.5 pb-1 text-[11px] font-medium uppercase tracking-wide text-subtle">
-          Private
+          {t('nav.private')}
         </div>
         <nav aria-label="Pages" data-tour="pages" className="px-2">
           {tree.length === 0 ? (
-            <p className="px-2 py-3 text-xs text-subtle">No pages yet.</p>
+            <p className="px-2 py-3 text-xs text-subtle">{t('empty.noPages')}</p>
           ) : (
             tree.map((node, i) => (
               <motion.div
@@ -143,8 +173,8 @@ export function Sidebar({ onOpenSearch }: SidebarProps): JSX.Element {
           onClick={() => setTrashOpen(true)}
           className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-surface-hover"
         >
-          <Trash2 size={15} />
-          <span className="flex-1 text-left">Trash</span>
+          <ITrash size={15} />
+          <span className="flex-1 text-left">{t('nav.trash')}</span>
         </button>
         <button
           type="button"
@@ -152,14 +182,20 @@ export function Sidebar({ onOpenSearch }: SidebarProps): JSX.Element {
           onClick={() => emit(OPEN_SETTINGS_EVENT)}
           className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-surface-hover"
         >
-          <Settings size={15} />
-          <span className="flex-1 text-left">Settings</span>
+          <ISettings size={15} />
+          <span className="flex-1 text-left">{t('nav.settings')}</span>
         </button>
         <div className="px-1 pt-2" data-tour="connectivity">
           <ConnectivityControls />
         </div>
         <div className="px-1 pt-2" data-tour="mode">
           <ThemeModeControls />
+        </div>
+        <div className="flex items-center justify-between px-1 pt-2" data-tour="atmosphere">
+          <span className="text-[10px] font-medium uppercase tracking-wide text-subtle">
+            Atmosphere
+          </span>
+          <AtmosphereControls />
         </div>
       </div>
 
