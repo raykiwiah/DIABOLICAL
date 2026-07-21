@@ -16,6 +16,7 @@ import type { DocumentTreeNode } from '@application/dto';
 import { useWorkspace } from '../state/workspace';
 import { usePreferences } from '../state/preferences';
 import { useLexicon, type LexKey } from '../theme/lexicon';
+import { OdysseusMark } from '../components/OdysseusMark';
 import { cn } from '../lib/cn';
 import { emit, OPEN_TEMPLATES_EVENT, OPEN_SEARCH_EVENT } from '../lib/events';
 import { modLabel } from '../lib/platform';
@@ -32,6 +33,7 @@ export function Home(): JSX.Element {
   const openToday = useWorkspace((s) => s.openToday);
   const open = useWorkspace((s) => s.open);
   const mode = usePreferences((s) => s.mode);
+  const skin = usePreferences((s) => s.skin);
   const userName = usePreferences((s) => s.userName);
   const t = useLexicon();
 
@@ -165,7 +167,11 @@ export function Home(): JSX.Element {
           </div>
           {recent.length === 0 ? (
             <div className="rn-panel flex flex-col items-center gap-2 px-6 py-12 text-center">
-              <FileText size={26} className="text-subtle" />
+              {skin === 'odysseus' ? (
+                <OdysseusMark size={52} className="text-primary" />
+              ) : (
+                <FileText size={26} className="text-subtle" />
+              )}
               <p className="text-sm text-muted-foreground">{t('home.recentEmpty')}</p>
             </div>
           ) : (

@@ -7,7 +7,9 @@ import { isTableDoc, tableFromDoc } from '@domain/table';
 import type { DocumentDetail } from '@application/dto';
 import { useWorkspace } from '../state/workspace';
 import { useViewMode } from '../state/viewMode';
+import { usePreferences } from '../state/preferences';
 import { useLexicon } from '../theme/lexicon';
+import { OdysseusMark } from '../components/OdysseusMark';
 import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
 import { cn } from '../lib/cn';
 import { Editor } from './Editor';
@@ -200,10 +202,11 @@ function StatRow({ label, value }: { label: string; value: string }): JSX.Elemen
 
 function EmptyState(): JSX.Element {
   const t = useLexicon();
+  const odysseus = usePreferences((s) => s.skin) === 'odysseus';
   return (
     <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-hover text-muted-foreground">
-        <FileText size={28} strokeWidth={1.5} />
+        {odysseus ? <OdysseusMark size={40} className="text-primary" /> : <FileText size={28} strokeWidth={1.5} />}
       </div>
       <div>
         <p className="text-base font-medium text-foreground">{t('editor.emptyTitle')}</p>

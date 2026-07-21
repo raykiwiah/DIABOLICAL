@@ -15,6 +15,7 @@ import {
   CloudOff,
   Lock,
   Compass,
+  Volume2,
 } from 'lucide-react';
 import { isWorkspaceBackup } from '@application/documents/backup';
 import { NETWORK_CAPABILITIES, capabilitiesEnabled } from '@domain/connectivity';
@@ -24,6 +25,7 @@ import { useCalendar } from '../state/calendar';
 import { useConnectivity } from '../state/connectivity';
 import { useTour } from '../state/tour';
 import { usePreferences, type SkinName } from '../state/preferences';
+import { useSound } from '../state/sound';
 import { AiConnection } from './AiConnection';
 import { cn } from '../lib/cn';
 import { downloadFile, pickTextFile } from '../lib/files';
@@ -47,6 +49,8 @@ export function SettingsModal({ open, onClose }: SettingsModalProps): JSX.Elemen
   const offline = conn.effective === 'offline';
   const skin = usePreferences((p) => p.skin);
   const setSkin = usePreferences((p) => p.setSkin);
+  const soundEnabled = useSound((s) => s.enabled);
+  const toggleSound = useSound((s) => s.toggle);
   const [calUrl, setCalUrl] = useState('');
 
   useEffect(() => {
@@ -148,6 +152,34 @@ export function SettingsModal({ open, onClose }: SettingsModalProps): JSX.Elemen
                 </button>
               ))}
             </div>
+            <label className="mt-1 flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2.5">
+              <span className="flex min-w-0 items-center gap-2">
+                <Volume2 size={15} className="shrink-0 text-muted-foreground" />
+                <span className="text-sm text-foreground">Voyage sounds</span>
+                <span className="truncate text-xs text-subtle">a distant, ambient sea</span>
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={soundEnabled}
+                aria-label="Enable voyage sounds"
+                onClick={() => toggleSound()}
+                className={cn(
+                  'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors',
+                  soundEnabled ? 'bg-primary' : 'bg-surface-hover',
+                )}
+              >
+                <span
+                  className={cn(
+                    'inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform',
+                    soundEnabled ? 'translate-x-4' : 'translate-x-0.5',
+                  )}
+                />
+              </button>
+            </label>
+            {soundEnabled && skin !== 'odysseus' && (
+              <p className="text-xs text-subtle">Switch to the Odysseus atmosphere to hear it.</p>
+            )}
           </Section>
 
           {/* Connectivity */}
