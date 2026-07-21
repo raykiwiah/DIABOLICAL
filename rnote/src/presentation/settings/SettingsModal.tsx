@@ -23,6 +23,7 @@ import { useWorkspace } from '../state/workspace';
 import { useCalendar } from '../state/calendar';
 import { useConnectivity } from '../state/connectivity';
 import { useTour } from '../state/tour';
+import { usePreferences, type SkinName } from '../state/preferences';
 import { AiConnection } from './AiConnection';
 import { cn } from '../lib/cn';
 import { downloadFile, pickTextFile } from '../lib/files';
@@ -44,6 +45,8 @@ export function SettingsModal({ open, onClose }: SettingsModalProps): JSX.Elemen
   const cal = useCalendar();
   const conn = useConnectivity();
   const offline = conn.effective === 'offline';
+  const skin = usePreferences((p) => p.skin);
+  const setSkin = usePreferences((p) => p.setSkin);
   const [calUrl, setCalUrl] = useState('');
 
   useEffect(() => {
@@ -112,6 +115,41 @@ export function SettingsModal({ open, onClose }: SettingsModalProps): JSX.Elemen
         </header>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+          {/* Atmosphere (skin) */}
+          <Section icon={<Compass size={15} className="text-primary" />} title="Atmosphere">
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Transform the entire feel of RNOTE. Switching is instant and changes only the look and
+              language — never your notes or data.
+            </p>
+            <div className="mt-1 grid grid-cols-2 gap-2">
+              {(
+                [
+                  { id: 'default', title: 'Default', sub: 'The original RNOTE' },
+                  { id: 'odysseus', title: 'Odysseus', sub: "Homer's Odyssey — a cinematic voyage" },
+                ] as { id: SkinName; title: string; sub: string }[]
+              ).map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setSkin(opt.id)}
+                  aria-pressed={skin === opt.id}
+                  className={cn(
+                    'rounded-lg border p-3 text-left transition',
+                    skin === opt.id
+                      ? 'border-primary bg-primary/5 shadow-glow'
+                      : 'border-border hover:border-border-strong',
+                  )}
+                >
+                  <div className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                    {opt.id === 'odysseus' && <Compass size={14} className="text-primary" />}
+                    {opt.title}
+                  </div>
+                  <div className="mt-0.5 text-xs text-muted-foreground">{opt.sub}</div>
+                </button>
+              ))}
+            </div>
+          </Section>
+
           {/* Connectivity */}
           <Section
             icon={<Wifi size={15} className="text-primary" />}

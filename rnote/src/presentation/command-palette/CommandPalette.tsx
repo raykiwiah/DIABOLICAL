@@ -24,6 +24,7 @@ import { isWorkspaceBackup } from '@application/documents/backup';
 import { useWorkspace } from '../state/workspace';
 import { useViewMode } from '../state/viewMode';
 import { usePreferences } from '../state/preferences';
+import { useLexicon } from '../theme/lexicon';
 import { Kbd } from '../components/Kbd';
 import { cn } from '../lib/cn';
 import { downloadFile, pickTextFile, slugify } from '../lib/files';
@@ -59,6 +60,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps): JSX.Elem
   const search = useWorkspace((s) => s.search);
   const openTimeline = useWorkspace((s) => s.openTimeline);
   const mode = usePreferences((s) => s.mode);
+  const t = useLexicon();
   const theme = usePreferences((s) => s.theme);
   const toggleTheme = usePreferences((s) => s.toggleTheme);
   const setMode = usePreferences((s) => s.setMode);
@@ -303,7 +305,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps): JSX.Elem
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="Search pages or type a command…"
+            placeholder={t('search.placeholder')}
             className="h-12 flex-1 bg-transparent text-[15px] text-foreground outline-none placeholder:text-subtle"
           />
         </div>

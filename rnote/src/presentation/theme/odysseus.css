@@ -1,0 +1,217 @@
+/**
+ * ── The Odysseus skin ────────────────────────────────────────────────────────
+ * An optional atmosphere inspired by Homer's Odyssey: deep navy oceans, bronze
+ * and gold, marble whites, weathered parchment and a sky of constellations.
+ *
+ * It is layered purely on top of the existing design tokens — nothing here
+ * changes behaviour. Every rule is scoped to [data-skin='odysseus'], so the
+ * 'default' skin renders exactly as before. Both blocks fully re-specify the
+ * palette so Odysseus wins over any theme/mode combination regardless of source
+ * order, and all motion respects prefers-reduced-motion.
+ *
+ * Fonts stay system stacks (offline-first): an elegant serif for display, the
+ * existing humanist sans for body — "ancient Greece meets modern minimalism".
+ */
+
+/* ── Odysseus · Sunlit Marble (light / day at sea) ──────────────────────────── */
+[data-skin='odysseus'] {
+  --background: 40 32% 94%;
+  --surface: 40 40% 98%;
+  --surface-hover: 38 32% 91%;
+  --elevated: 0 0% 100%;
+  --overlay: 218 45% 10%;
+
+  --foreground: 218 42% 16%;
+  --muted: 38 30% 90%;
+  --muted-foreground: 220 16% 38%;
+  --subtle: 32 14% 52%;
+
+  --border: 36 26% 80%;
+  --border-strong: 34 26% 68%;
+  --ring: 36 58% 44%;
+
+  --primary: 30 54% 40%;          /* bronze ink */
+  --primary-foreground: 40 42% 97%;
+  --accent: 208 58% 36%;          /* deep Aegean */
+  --accent-foreground: 40 42% 97%;
+
+  --success: 120 30% 34%;         /* laurel */
+  --warning: 33 78% 44%;
+  --danger: 356 58% 46%;
+  --info: 205 62% 40%;
+
+  --radius: 10px;
+
+  --font-display: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua',
+    Georgia, 'Times New Roman', serif;
+
+  --shadow-xs: 0 1px 2px hsl(30 30% 20% / 0.06);
+  --shadow-sm: 0 1px 3px hsl(30 30% 20% / 0.09), 0 1px 2px hsl(30 30% 20% / 0.05);
+  --shadow-md: 0 6px 18px hsl(30 30% 20% / 0.12), 0 2px 5px hsl(30 30% 20% / 0.06);
+  --shadow-lg: 0 16px 40px hsl(218 40% 20% / 0.16), 0 5px 12px hsl(30 30% 20% / 0.08);
+  --shadow-glow: 0 0 0 1px hsl(36 58% 44% / 0.14), 0 8px 30px hsl(36 62% 46% / 0.14);
+
+  --gradient-hero: linear-gradient(135deg, hsl(208 58% 36% / 0.1), hsl(36 62% 46% / 0.08) 60%, transparent);
+  --gradient-card: linear-gradient(135deg, hsl(36 50% 60% / 0.1), hsl(208 50% 44% / 0.06));
+}
+
+/* ── Odysseus · Night Voyage (dark / the wine-dark sea) ──────────────────────── */
+[data-skin='odysseus'][data-theme='dark'] {
+  --background: 216 46% 8%;       /* deep navy ocean */
+  --surface: 216 40% 12%;
+  --surface-hover: 214 34% 17%;
+  --elevated: 216 40% 14%;
+  --overlay: 220 60% 3%;
+
+  --foreground: 42 30% 90%;       /* warm marble */
+  --muted: 216 30% 17%;
+  --muted-foreground: 40 16% 70%; /* weathered parchment */
+  --subtle: 38 12% 52%;
+
+  --border: 32 20% 26%;           /* aged bronze edge */
+  --border-strong: 34 28% 36%;
+  --ring: 41 72% 56%;
+
+  --primary: 38 64% 52%;          /* bronze-gold */
+  --primary-foreground: 220 55% 9%;
+  --accent: 43 82% 62%;           /* gold */
+  --accent-foreground: 220 55% 9%;
+
+  --success: 118 32% 46%;         /* laurel */
+  --warning: 36 86% 58%;
+  --danger: 356 60% 56%;
+  --info: 200 62% 56%;
+
+  --shadow-xs: 0 1px 2px hsl(220 60% 2% / 0.5);
+  --shadow-sm: 0 1px 3px hsl(220 60% 2% / 0.55), 0 1px 2px hsl(220 60% 2% / 0.4);
+  --shadow-md: 0 6px 20px hsl(220 60% 2% / 0.6), 0 2px 6px hsl(220 60% 2% / 0.4);
+  --shadow-lg: 0 18px 48px hsl(220 70% 1% / 0.7), 0 6px 14px hsl(220 60% 2% / 0.5);
+  --shadow-glow: 0 0 0 1px hsl(41 72% 56% / 0.18), 0 10px 44px hsl(41 78% 52% / 0.16);
+
+  --gradient-hero: linear-gradient(150deg, hsl(208 60% 20% / 0.55), hsl(41 70% 50% / 0.1) 65%, transparent);
+  --gradient-card: linear-gradient(150deg, hsl(208 55% 24% / 0.35), hsl(41 60% 48% / 0.06));
+}
+
+/* ── The captain's canvas: constellations over a calm sea ────────────────────
+   Applied to full-bleed roots (app shell, onboarding, terms). A fixed starfield
+   plus ocean glow; content panels sit above it, so it breathes through the open
+   spaces (the editor, empty states, gaps) without ever sitting behind text. */
+[data-skin='odysseus'] .rn-canvas {
+  position: relative;
+  /* Own stacking context so the decorative shimmer can sit behind content
+     without a z-index on every child — and without disturbing fixed elements. */
+  isolation: isolate;
+  background-color: hsl(var(--background));
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 16%, hsl(44 72% 88% / 0.55), transparent 60%),
+    radial-gradient(1.5px 1.5px at 82% 11%, hsl(44 72% 88% / 0.5), transparent 60%),
+    radial-gradient(1px 1px at 66% 26%, hsl(200 60% 88% / 0.5), transparent 60%),
+    radial-gradient(1.5px 1.5px at 28% 38%, hsl(44 72% 88% / 0.4), transparent 60%),
+    radial-gradient(1px 1px at 47% 8%, hsl(0 0% 100% / 0.5), transparent 60%),
+    radial-gradient(1px 1px at 91% 34%, hsl(200 60% 88% / 0.45), transparent 60%),
+    radial-gradient(1.5px 1.5px at 74% 44%, hsl(44 72% 88% / 0.35), transparent 60%),
+    radial-gradient(1px 1px at 8% 52%, hsl(0 0% 100% / 0.4), transparent 60%),
+    radial-gradient(1px 1px at 38% 21%, hsl(0 0% 100% / 0.4), transparent 60%),
+    radial-gradient(1.5px 1.5px at 58% 33%, hsl(44 72% 88% / 0.3), transparent 60%),
+    radial-gradient(140% 95% at 50% 122%, hsl(200 70% 24% / 0.5), transparent 62%),
+    radial-gradient(120% 80% at 50% -12%, hsl(220 55% 14% / 0.55), transparent 55%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+/* The light skin keeps a warmer, near-cloudless sky — hide the night stars. */
+[data-skin='odysseus']:not([data-theme='dark']) .rn-canvas {
+  background-image:
+    radial-gradient(130% 90% at 50% 120%, hsl(208 45% 62% / 0.14), transparent 60%),
+    radial-gradient(120% 80% at 50% -12%, hsl(40 50% 82% / 0.5), transparent 55%);
+}
+
+/* A slow ocean shimmer drifting across the canvas — calm, cinematic, optional. */
+[data-skin='odysseus'] .rn-canvas::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1; /* behind content, above the starfield background */
+  pointer-events: none;
+  background: radial-gradient(60% 40% at 30% 80%, hsl(200 70% 40% / 0.06), transparent 70%);
+  animation: rn-ody-tide 16s ease-in-out infinite alternate;
+}
+
+@keyframes rn-ody-tide {
+  from { transform: translate3d(-3%, 1%, 0); opacity: 0.7; }
+  to { transform: translate3d(4%, -2%, 0); opacity: 1; }
+}
+
+/* ── Typography: elegant serif display, gently spaced ───────────────────────── */
+[data-skin='odysseus'] .font-display {
+  letter-spacing: 0.01em;
+}
+
+/* Subtle parchment tint on raised panels/cards (kept extremely faint). */
+[data-skin='odysseus'] .rn-panel {
+  background-image: linear-gradient(180deg, hsl(40 40% 70% / 0.03), transparent 40%);
+}
+
+/* ── Micro-interactions ─────────────────────────────────────────────────────── */
+
+/* A note unfurls like a scroll when opened. DocumentEditor remounts per page,
+   so this plays on each new chronicle. */
+[data-skin='odysseus'] .rn-editor {
+  animation: rn-ody-unfurl var(--duration-base, 240ms) cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-origin: top center;
+}
+@keyframes rn-ody-unfurl {
+  from { opacity: 0; transform: translateY(8px) scaleY(0.985); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Primary actions catch a soft candle-gold sheen on hover; everything eases. */
+[data-skin='odysseus'] button {
+  transition:
+    background-color var(--duration-fast, 140ms) ease,
+    color var(--duration-fast, 140ms) ease,
+    box-shadow var(--duration-base, 220ms) ease,
+    transform var(--duration-base, 220ms) cubic-bezier(0.16, 1, 0.3, 1);
+}
+[data-skin='odysseus'] .bg-primary:hover {
+  box-shadow: var(--shadow-glow);
+}
+
+/* The loading indicator becomes a slowly turning compass. */
+[data-skin='odysseus'] .rn-spinner {
+  border-width: 2px;
+  border-color: hsl(var(--border-strong));
+  border-top-color: hsl(var(--primary));
+  position: relative;
+  animation-duration: 1.6s;
+}
+[data-skin='odysseus'] .rn-spinner::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 9999px;
+  border: 1px solid hsl(var(--primary) / 0.35);
+}
+[data-skin='odysseus'] .rn-spinner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 2px;
+  height: 55%;
+  border-radius: 2px;
+  background: linear-gradient(hsl(var(--accent)) 50%, hsl(var(--border-strong)) 50%);
+}
+
+/* Respect reduced motion: drop the decorative animations, keep the atmosphere. */
+@media (prefers-reduced-motion: reduce) {
+  [data-skin='odysseus'] .rn-canvas::after,
+  [data-skin='odysseus'] .rn-editor {
+    animation: none;
+  }
+}
+[data-reduced-motion='true'] [data-skin='odysseus'] .rn-canvas::after,
+[data-skin='odysseus'][data-reduced-motion='true'] .rn-canvas::after,
+[data-reduced-motion='true'] .rn-editor {
+  animation: none;
+}
