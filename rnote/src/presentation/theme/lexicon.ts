@@ -65,7 +65,42 @@ const LEXICON = {
     default: 'Select a page from the sidebar or create a new one.',
     odysseus: 'Choose a chronicle from your log, or begin a new one.',
   },
+
+  // Trash / The Underworld
+  'trash.title': { default: 'Trash', odysseus: 'The Underworld' },
+  'trash.empty': { default: 'Trash is empty', odysseus: 'The Underworld is quiet.' },
+  'trash.emptyHint': {
+    default: 'Pages you move to Trash appear here.',
+    odysseus: 'Chronicles you release drift here — not yet forgotten.',
+  },
+
+  // Progress — the journey home
+  'stats.progressLabel': { default: 'Your progress', odysseus: 'Your voyage home' },
+  'stats.xp': { default: 'XP', odysseus: 'wisdom' },
+  'stats.toNext': { default: 'to next', odysseus: 'to Ithaca' },
+  'stats.dayOne': { default: 'day', odysseus: 'day at sea' },
+  'stats.dayMany': { default: 'days', odysseus: 'days at sea' },
+  'stats.noStreak': { default: 'No streak yet', odysseus: 'Becalmed — no streak yet' },
 } satisfies Record<string, Entry>;
+
+/**
+ * Mythology names for the achievements under Odysseus. Keyed by achievement id;
+ * the default title (from the domain) is used for any id not listed here and for
+ * the default skin.
+ */
+const ACHIEVEMENT_ODYSSEUS: Record<string, string> = {
+  'first-page': 'First Voyage',
+  capturer: 'Navigator',
+  prolific: 'Story Keeper',
+  'streak-3': 'Steadfast Helmsman',
+  'streak-7': 'Keeper of Memories',
+  'level-5': 'King of Ithaca',
+};
+
+export function achievementTitle(id: string, fallback: string, skin: SkinName): string {
+  if (skin === 'odysseus') return ACHIEVEMENT_ODYSSEUS[id] ?? fallback;
+  return fallback;
+}
 
 export type LexKey = keyof typeof LEXICON;
 

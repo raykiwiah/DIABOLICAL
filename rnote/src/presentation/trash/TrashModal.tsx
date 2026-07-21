@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Trash2, RotateCcw, FileText, X } from 'lucide-react';
+import { Trash2, RotateCcw, FileText, X, Skull } from 'lucide-react';
 import { useWorkspace } from '../state/workspace';
+import { usePreferences } from '../state/preferences';
+import { useLexicon } from '../theme/lexicon';
+import { OdysseusMark } from '../components/OdysseusMark';
 import { cn } from '../lib/cn';
 
 interface TrashModalProps {
@@ -16,6 +19,9 @@ export function TrashModal({ open, onClose }: TrashModalProps): JSX.Element | nu
   const restore = useWorkspace((s) => s.restore);
   const remove = useWorkspace((s) => s.remove);
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const t = useLexicon();
+  const odysseus = usePreferences((s) => s.skin) === 'odysseus';
+  const HeaderIcon = odysseus ? Skull : Trash2;
 
   useEffect(() => {
     if (open) {
@@ -40,7 +46,7 @@ export function TrashModal({ open, onClose }: TrashModalProps): JSX.Element | nu
       className="fixed inset-0 z-[60] flex items-start justify-center px-4 pt-[12vh]"
       role="dialog"
       aria-modal="true"
-      aria-label="Trash"
+      aria-label={t('trash.title')}
     >
       <motion.div
         className="absolute inset-0 bg-overlay/50 backdrop-blur-sm"
@@ -55,8 +61,8 @@ export function TrashModal({ open, onClose }: TrashModalProps): JSX.Element | nu
         className="rn-panel relative w-full max-w-[560px] overflow-hidden shadow-lg"
       >
         <header className="flex items-center gap-2 border-b border-border px-4 py-3">
-          <Trash2 size={17} className="text-muted-foreground" />
-          <h2 className="text-sm font-semibold text-foreground">Trash</h2>
+          <HeaderIcon size={17} className="text-muted-foreground" />
+          <h2 className="text-sm font-semibold text-foreground">{t('trash.title')}</h2>
           <span className="text-xs text-subtle">
             {archived.length > 0 && `· ${archived.length}`}
           </span>
@@ -73,9 +79,13 @@ export function TrashModal({ open, onClose }: TrashModalProps): JSX.Element | nu
         <div className="max-h-[52vh] overflow-y-auto p-2">
           {archived.length === 0 ? (
             <div className="flex flex-col items-center gap-2 px-3 py-12 text-center">
-              <Trash2 size={26} className="text-subtle" />
-              <p className="text-sm text-muted-foreground">Trash is empty</p>
-              <p className="text-xs text-subtle">Pages you move to Trash appear here.</p>
+              {odysseus ? (
+                <OdysseusMark size={44} className="text-primary" />
+              ) : (
+                <Trash2 size={26} className="text-subtle" />
+              )}
+              <p className="text-sm text-muted-foreground">{t('trash.empty')}</p>
+              <p className="text-xs text-subtle">{t('trash.emptyHint')}</p>
             </div>
           ) : (
             archived.map((doc) => (

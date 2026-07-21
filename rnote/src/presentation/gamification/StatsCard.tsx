@@ -4,6 +4,7 @@ import { Flame, Trophy } from 'lucide-react';
 import { useGameStats } from '../state/gameStats';
 import { usePreferences } from '../state/preferences';
 import { cn } from '../lib/cn';
+import { useLexicon, achievementTitle } from '../theme/lexicon';
 import { ACHIEVEMENTS, levelProgress } from './leveling';
 
 /** Animated integer that eases toward its target — numbers feel alive. */
@@ -39,6 +40,8 @@ export function StatsCard(): JSX.Element {
   const streak = useGameStats((s) => s.streak);
   const earned = useGameStats((s) => s.achievements);
   const mode = usePreferences((s) => s.mode);
+  const skin = usePreferences((s) => s.skin);
+  const t = useLexicon();
   const { level, pct, toNext } = levelProgress(xp);
 
   if (mode !== 'genz') {
@@ -47,9 +50,11 @@ export function StatsCard(): JSX.Element {
       <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
         <span className="font-medium text-foreground">Level {level}</span>
         <span aria-hidden>·</span>
-        <span>{streak > 0 ? `${streak}-day streak` : 'No streak yet'}</span>
+        <span>{streak > 0 ? `${streak}-day streak` : t('stats.noStreak')}</span>
         <span aria-hidden>·</span>
-        <span>{xp} XP</span>
+        <span>
+          {xp} {t('stats.xp')}
+        </span>
         <span aria-hidden>·</span>
         <span>
           {earned.length} of {ACHIEVEMENTS.length} achievements
@@ -67,7 +72,7 @@ export function StatsCard(): JSX.Element {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: 0.04, ease: [0.16, 1, 0.3, 1] }}
-      aria-label="Your progress"
+      aria-label={t('stats.progressLabel')}
       className="mt-6 rn-panel overflow-hidden p-4"
     >
       <div className="flex items-center gap-4">
@@ -99,9 +104,11 @@ export function StatsCard(): JSX.Element {
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-sm font-semibold tabular-nums text-foreground">
-              <CountUp value={xp} /> XP
+              <CountUp value={xp} /> {t('stats.xp')}
             </span>
-            <span className="text-xs text-muted-foreground">{toNext} to next</span>
+            <span className="text-xs text-muted-foreground">
+              {toNext} {t('stats.toNext')}
+            </span>
           </div>
           <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-surface-hover">
             <motion.div
@@ -117,7 +124,9 @@ export function StatsCard(): JSX.Element {
         <div className="flex shrink-0 flex-col items-center gap-0.5 rounded-lg bg-surface-hover px-3 py-1.5">
           <Flame size={18} className={streak > 0 ? 'text-accent' : 'text-subtle'} />
           <span className="text-sm font-semibold text-foreground">{streak}</span>
-          <span className="text-[10px] uppercase tracking-wide text-subtle">day{streak === 1 ? '' : 's'}</span>
+          <span className="text-[10px] uppercase tracking-wide text-subtle">
+            {streak === 1 ? t('stats.dayOne') : t('stats.dayMany')}
+          </span>
         </div>
       </div>
 
@@ -130,7 +139,11 @@ export function StatsCard(): JSX.Element {
             return (
               <span
                 key={a.id}
-                title={has ? `${a.title} — ${a.description}` : `Locked · ${a.description}`}
+                title={
+                  has
+                    ? `${achievementTitle(a.id, a.title, skin)} — ${a.description}`
+                    : `Locked · ${a.description}`
+                }
                 className={cn(
                   'inline-flex h-7 w-7 items-center justify-center rounded-full border text-sm transition',
                   has
@@ -139,7 +152,11 @@ export function StatsCard(): JSX.Element {
                 )}
               >
                 <span aria-hidden>{a.icon}</span>
-                <span className="sr-only">{has ? `${a.title} unlocked` : `${a.title} locked`}</span>
+                <span className="sr-only">
+                  {has
+                    ? `${achievementTitle(a.id, a.title, skin)} unlocked`
+                    : `${achievementTitle(a.id, a.title, skin)} locked`}
+                </span>
               </span>
             );
           })}

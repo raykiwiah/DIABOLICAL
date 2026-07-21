@@ -17,6 +17,10 @@ import { useViewMode } from '../state/viewMode';
 import { useCalendar } from '../state/calendar';
 import { useTour } from '../state/tour';
 import { TOUR_VERSION } from '../tour/tourSteps';
+import { useOdysseusRipple } from '../hooks/useOdysseusRipple';
+import { useSound } from '../state/sound';
+import { usePreferences } from '../state/preferences';
+import { startSoundscape, stopSoundscape } from '@infrastructure/audio/soundscape';
 import { useHotkey } from '../hooks/useHotkey';
 import { IconButton } from '../components/IconButton';
 import {
@@ -58,6 +62,7 @@ function useIsMobile(): boolean {
 /** The main workspace shell: sidebar · topbar · content, plus overlays. */
 export function AppShell(): JSX.Element {
   const isMobile = useIsMobile();
+  useOdysseusRipple();
   const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 768);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [templatesOpen, setTemplatesOpen] = useState(false);
@@ -141,6 +146,15 @@ export function AppShell(): JSX.Element {
     }, 700);
     return () => window.clearTimeout(t);
   }, [tourSeen, startTour]);
+
+  // Optional Odysseus ambient sea — only when enabled and on the Odysseus skin.
+  const soundEnabled = useSound((s) => s.enabled);
+  const odysseus = usePreferences((s) => s.skin) === 'odysseus';
+  useEffect(() => {
+    if (soundEnabled && odysseus) void startSoundscape();
+    else stopSoundscape();
+    return () => stopSoundscape();
+  }, [soundEnabled, odysseus]);
 
   return (
     <MotionConfig reducedMotion="user">
@@ -282,6 +296,7 @@ export function AppShell(): JSX.Element {
       <ConnectivityToast />
       <AiConnectToast />
       <ProductTour />
+      <span className="rn-shooting-star" aria-hidden />
     </div>
     </MotionConfig>
   );

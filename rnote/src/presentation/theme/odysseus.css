@@ -203,15 +203,181 @@
   background: linear-gradient(hsl(var(--accent)) 50%, hsl(var(--border-strong)) 50%);
 }
 
+/* ═══ Deeper immersion ══════════════════════════════════════════════════════ */
+
+/* Candlelight vignette — the edges of the world fall into dusk. */
+[data-skin='odysseus'][data-theme='dark'] .rn-canvas {
+  box-shadow: inset 0 0 170px 24px hsl(220 65% 2% / 0.55);
+}
+[data-skin='odysseus']:not([data-theme='dark']) .rn-canvas {
+  box-shadow: inset 0 0 160px 30px hsl(34 45% 55% / 0.12);
+}
+
+/* Illuminated manuscript: the first letter of a chronicle is set in bronze.
+   Empty pages show only a placeholder (no text node), so this never applies to
+   a blank page. */
+[data-skin='odysseus'] .rn-editor .ProseMirror > p:first-child::first-letter {
+  float: left;
+  margin: 0.02em 0.09em 0 0;
+  padding-top: 0.02em;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 3.1em;
+  line-height: 0.8;
+  color: hsl(var(--primary));
+  text-shadow: 0 1px 0 hsl(var(--accent) / 0.25);
+}
+
+/* Dividers become a hairline rule parted by a bronze mark. */
+[data-skin='odysseus'] .rn-editor .ProseMirror hr {
+  border: none;
+  height: 8px;
+  margin: 1.7em 0;
+  background-image:
+    radial-gradient(circle, hsl(var(--primary)) 1.5px, transparent 2px),
+    linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--border-strong)) 22%,
+      transparent 44%,
+      transparent 56%,
+      hsl(var(--border-strong)) 78%,
+      transparent
+    );
+  background-size: 9px 9px, 100% 1px;
+  background-position: center, center;
+  background-repeat: no-repeat;
+  opacity: 0.85;
+}
+
+/* The dashboard hero becomes a captain's chart table: faint grid + compass rings. */
+[data-skin='odysseus'] .rn-hero {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+[data-skin='odysseus'] .rn-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(0deg, hsl(var(--primary) / 0.05) 0 1px, transparent 1px 38px),
+    repeating-linear-gradient(90deg, hsl(var(--primary) / 0.05) 0 1px, transparent 1px 38px),
+    radial-gradient(circle at 91% 60%, transparent 30px, hsl(var(--primary) / 0.13) 31px 32px, transparent 33px),
+    radial-gradient(circle at 91% 60%, transparent 15px, hsl(var(--primary) / 0.11) 16px 17px, transparent 18px),
+    radial-gradient(circle at 91% 60%, hsl(var(--accent) / 0.16) 2px, transparent 3px);
+  background-repeat: no-repeat;
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 30%);
+  mask-image: linear-gradient(90deg, transparent, black 30%);
+}
+
+/* Cards catch a slow candle-gold sheen on hover, like light across bronze. */
+[data-skin='odysseus'] .rn-panel {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+[data-skin='odysseus'] .rn-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 34%, hsl(var(--accent) / 0.13) 50%, transparent 64%);
+  transform: translateX(-130%);
+  transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+}
+[data-skin='odysseus'] .rn-panel:hover::before {
+  transform: translateX(130%);
+}
+
+/* Water ripple on press — a splash spawned at the pointer by useOdysseusRipple.
+   Fixed to the viewport so it never mutates or clips the element pressed. */
+.rn-ripple {
+  position: fixed;
+  width: 150px;
+  height: 150px;
+  border-radius: 9999px;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0);
+  background: radial-gradient(circle, hsl(38 70% 60% / 0.42), hsl(38 70% 60% / 0.12) 52%, transparent 70%);
+  animation: rn-ody-ripple 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  z-index: 60;
+}
+@keyframes rn-ody-ripple {
+  to { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+}
+
+/* A rare shooting star crosses the night sky (dark only). */
+[data-skin='odysseus'][data-theme='dark'] .rn-canvas .rn-shooting-star {
+  position: fixed;
+  top: 14%;
+  left: -6%;
+  width: 120px;
+  height: 1.5px;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, hsl(44 80% 90% / 0.9));
+  border-radius: 9999px;
+  opacity: 0;
+  animation: rn-ody-shoot 15s ease-in 6s infinite;
+}
+@keyframes rn-ody-shoot {
+  0% { transform: translate(0, 0) rotate(14deg); opacity: 0; }
+  2% { opacity: 0.9; }
+  7% { transform: translate(48vw, 22vh) rotate(14deg); opacity: 0; }
+  100% { transform: translate(48vw, 22vh) rotate(14deg); opacity: 0; }
+}
+
+/* Elegant display headings: gentle small-caps flourish + a whisper of letterpress. */
+[data-skin='odysseus'] h1.font-display,
+[data-skin='odysseus'] h2.font-display {
+  font-variant: common-ligatures oldstyle-nums;
+  text-shadow: 0 1px 1px hsl(220 60% 4% / 0.25);
+}
+
+/* Bronze scrollbars — the theme continues to the very edges. */
+[data-skin='odysseus'] * {
+  scrollbar-color: hsl(var(--border-strong)) transparent;
+  scrollbar-width: thin;
+}
+[data-skin='odysseus'] *::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+[data-skin='odysseus'] *::-webkit-scrollbar-thumb {
+  background: hsl(var(--border-strong) / 0.7);
+  border: 2px solid transparent;
+  background-clip: content-box;
+  border-radius: 9999px;
+}
+[data-skin='odysseus'] *::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.75);
+  background-clip: content-box;
+}
+
+/* Selection + focus glow in candle-gold. */
+[data-skin='odysseus'] ::selection {
+  background: hsl(var(--accent) / 0.3);
+  color: hsl(var(--foreground));
+}
+
 /* Respect reduced motion: drop the decorative animations, keep the atmosphere. */
 @media (prefers-reduced-motion: reduce) {
   [data-skin='odysseus'] .rn-canvas::after,
-  [data-skin='odysseus'] .rn-editor {
+  [data-skin='odysseus'] .rn-editor,
+  [data-skin='odysseus'] .rn-panel::before,
+  [data-skin='odysseus'] .rn-shooting-star,
+  [data-skin='odysseus'] .rn-ripple {
     animation: none;
+    transition: none;
   }
 }
 [data-reduced-motion='true'] [data-skin='odysseus'] .rn-canvas::after,
 [data-skin='odysseus'][data-reduced-motion='true'] .rn-canvas::after,
+[data-skin='odysseus'][data-reduced-motion='true'] .rn-shooting-star,
 [data-reduced-motion='true'] .rn-editor {
   animation: none;
 }
